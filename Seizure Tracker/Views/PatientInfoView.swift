@@ -5,12 +5,17 @@
 //  Created by Martina Kolajová on 02.12.2025.
 //
 
+//  PatientInfoView.swift
+//  Seizure Tracker
+//
+//  Created by Martina Kolajová on 02.12.2025.
+//
 
-import SwiftUI
 import SwiftUI
 
 struct PatientInfoView: View {
     @Binding var patientName: String
+    
     let onContinue: () -> Void
     let onBack: () -> Void
 
@@ -31,9 +36,10 @@ struct PatientInfoView: View {
     @State private var personalNotes: String = ""
     @State private var diagnosisText: String = ""
     @State private var diagnosisYear: String = ""
-    @State private var seizureType: String = ""
     @State private var medicationText: String = ""
     @State private var extraNotes: String = ""
+    
+    @StateObject private var icdService = ICD10Service()
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -41,14 +47,6 @@ struct PatientInfoView: View {
                 // Violet animated background
                 MeshGradientView()
                     .ignoresSafeArea()
-
-                // Optional: book-style image in Assets called "BookBackground"
-                Image("BookBackground")
-                    .resizable()
-                    .scaledToFill()
-                    .ignoresSafeArea()
-                    .opacity(0.35)
-                    .blendMode(.softLight)
 
                 mainContent
             }
@@ -73,7 +71,7 @@ struct PatientInfoView: View {
                     .foregroundColor(.white)
                     .font(.headline)
                 Spacer()
-                Color.clear.frame(width: 40, height: 1)
+                Color.clear.frame(width: 60, height: 3)
             }
             .padding(.horizontal, 24)
             .padding(.top, 40)
@@ -83,6 +81,7 @@ struct PatientInfoView: View {
                 Spacer()
             }
             .padding(.top, 10)
+            .padding(.leading, 8)
 
             Spacer()
 
@@ -140,8 +139,8 @@ struct PatientInfoView: View {
             }
         }
         .padding(.vertical, 18)
-        .padding(.trailing, 18)
-        .frame(width: 240, alignment: .topLeading)
+        .padding(.trailing, 40)
+        .frame(width: 210, alignment: .topLeading)
         .background(
             .ultraThinMaterial,
             in: UnevenRoundedRectangle(
@@ -204,15 +203,48 @@ struct PatientInfoView: View {
         case .diagnosis:
             Form {
                 Section("Diagnosis") {
-                    TextField("Diagnosis (e.g. focal epilepsy, MTLE/HS)",
-                              text: $diagnosisText)
 
-                    TextField("Year diagnosed",
-                              text: $diagnosisYear)
+                    // DEBUG – so we know this view is really shown
+                    Text("Diagnosis view loaded")
+                        .foregroundColor(.secondary)
+                        .onAppear {
+                            print("DEBUG: Diagnosis view appeared")
+                        }
+
+                    TextField("Start typing diagnosis…", text: $diagnosisText)
+                        .autocorrectionDisabled()
+                        .onAppear {
+                            print("DEBUG: Diagnosis TextField appeared")
+                        }
+                        .onChange(of: diagnosisText) { newValue in
+                            print("DEBUG: onChange fired, new diagnosisText =", newValue)
+                            icdService.search(term: newValue)
+                        }
+
+                    Text("Echo: \(diagnosisText)")
+                        .foregroundColor(.secondary)
+
+                    TextField("Year diagnosed", text: $diagnosisYear)
                         .keyboardType(.numberPad)
+                }
 
-                    TextField("Main seizure type",
-                              text: $seizureType)
+                if !icdService.suggestions.isEmpty {
+                    Section("Suggestions") {
+                        ForEach(icdService.suggestions) { suggestion in
+                            Button {
+                                diagnosisText = "\(suggestion.code) – \(suggestion.name)"
+                                icdService.suggestions = []
+                            } label: {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(suggestion.code)
+                                        .font(.headline)
+                                    Text(suggestion.name)
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                    }
                 }
             }
             .navigationTitle("Diagnosis")
@@ -240,4 +272,12 @@ struct PatientInfoView: View {
             .navigationTitle("Notes")
         }
     }
+}
+
+#Preview {
+    PatientInfoView(
+        patientName: .constant("Anna Preview"),  // any test name
+        onContinue: { },
+        onBack: { }
+    )
 }
