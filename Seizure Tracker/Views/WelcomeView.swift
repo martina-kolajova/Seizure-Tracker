@@ -18,16 +18,15 @@ struct WelcomeView: View {
                 Spacer()
 
                 VStack(spacing: 16) {
-                    Image(systemName: "brain")
+                    Image( "EpiLog-white")
                         .resizable()
+                        .renderingMode(.original)   // keep the original colors of your logo
                         .scaledToFit()
-                        .frame(width: 120, height: 120)
-                        .symbolRenderingMode(.hierarchical)
-                        .foregroundColor(.white)
+                        .frame(width: 160, height: 160)
 
-                    Text("EpiLog")
-                        .font(.system(size: 34, weight: .bold))
-                        .foregroundColor(.white)
+                    //Text("EpiLog")
+                      //  .font(.system(size: 34, weight: .bold))
+                        //.foregroundColor(.white)
 
                     Text("A simple, personal way to log seizures.")
                         .font(.subheadline)
@@ -44,8 +43,13 @@ struct WelcomeView: View {
                         HStack(spacing: 8) {
                             Text("Create profile")
                                 .font(.headline)
-                            Image(systemName: "arrow.right.circle.fill")
-                        }
+                            Image("logo-white")
+                                     .resizable()
+                                     .renderingMode(.original)     // keep white color
+                                     .scaledToFit()
+                                     .frame(width: 35, height: 35) // perfect icon size
+                                     .padding(.leading, 4)
+                             }
                         .padding(.horizontal, 24)
                         .padding(.vertical, 10)
                         .foregroundColor(.white)
@@ -67,4 +71,9 @@ struct WelcomeView: View {
             }
         }
     }
+}
+
+
+#Preview {
+    ContentView()
 }

@@ -60,6 +60,40 @@ struct PatientInfoView: View {
     }
 
     // MARK: - Main layout
+    // MARK: - Radial menu helpers
+
+    private func angleForIndex(_ index: Int, total: Int) -> CGFloat {
+        // Angles in radians along a left-side arc (from top-left to bottom-left)
+        // tweak these to taste
+        let start = -CGFloat.pi * 0.65  // around -117°
+        let end   =  CGFloat.pi * 0.65  // around  117°
+
+        if total <= 1 { return 0 }
+        let t = CGFloat(index) / CGFloat(total - 1)
+        return start + (end - start) * t
+    }
+
+    private func sectionPill(for section: InfoSection) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon(for: section))
+            Text(section.rawValue)
+                .font(.subheadline)
+                .lineLimit(1)
+        }
+        .foregroundStyle(.white)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.white.opacity(0.18))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.white.opacity(0.35), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.25), radius: 10, y: 6)
+    }
+
 
     private var mainContent: some View {
         VStack(spacing: 24) {
@@ -79,12 +113,47 @@ struct PatientInfoView: View {
             .padding(.horizontal, 24)
             .padding(.top, 40)
 
-            HStack(alignment: .top, spacing: 0) {
-                sidebar
+            HStack {
+                GeometryReader { geo in
+                    ZStack {
+                        // BIG BACKGROUND LOGO (half visible on the left)
+                        Image("logo-white")
+                            .resizable()
+                            .renderingMode(.template)
+                            .foregroundColor(.white.opacity(0.7))
+                            .scaledToFit()
+                            .frame(width: geo.size.height * 0.9)
+                            .position(
+                                x: -geo.size.width * 0.15,   // push off-screen to the left
+                                y: geo.size.height * 0.4
+                            )
+                            .allowsHitTesting(false)
+
+                        // RADIAL BUTTONS AROUND THE LOGO
+                        ForEach(Array(InfoSection.allCases.enumerated()), id: \.1) { index, section in
+                            let angle = angleForIndex(index, total: InfoSection.allCases.count)
+                            let radius = geo.size.height * 0.32
+                            let center = CGPoint(x: geo.size.width * 0.18,
+                                                 y: geo.size.height * 0.4)
+
+                            let x = center.x + cos(angle) * radius
+                            let y = center.y + sin(angle) * radius
+
+                            NavigationLink(value: section) {
+                                sectionPill(for: section)
+                            }
+                            .buttonStyle(.plain)
+                            .position(x: x, y: y)
+                        }
+                    }
+                }
+                .frame(width: 260)   // left column width
+
                 Spacer()
             }
             .padding(.top, 10)
             .padding(.leading, 8)
+
 
             Spacer()
 
