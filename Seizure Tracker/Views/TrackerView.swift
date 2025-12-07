@@ -7,9 +7,11 @@
 
 import SwiftUI
 
+
 struct TrackerView: View {
-    @Binding var hasStarted: Bool
-    
+    let patientName: String
+    let onBack: () -> Void
+
     // Simple in-memory state
     @State private var todayCount: Int = 0
     @State private var totalCount: Int = 0
@@ -35,18 +37,30 @@ struct TrackerView: View {
                 ScrollView {
                     VStack(spacing: 24) {
 
-                        // Header
-                        VStack(spacing: 8) {
-                            Text("Seizure Tracker")
-                                .font(.largeTitle.bold())
-                                .foregroundColor(.white)
+                        // Back + patient name
+                        HStack {
+                            Button {
+                                onBack()
+                            } label: {
+                                Image(systemName: "chevron.left")
+                                    .foregroundColor(.white)
+                                    .padding(8)
+                                    .background(Color.white.opacity(0.15))
+                                    .clipShape(Circle())
+                            }
 
-                            Text("Log seizures and keep a simple overview.")
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.8))
-                                .multilineTextAlignment(.center)
+                            Spacer()
+
+                            if !patientName.isEmpty {
+                                Text(patientName)
+                                    .foregroundColor(.white.opacity(0.85))
+                                    .font(.subheadline)
+                            }
                         }
                         .padding(.top, 10)
+
+                        // (keep your existing header + cards below this)
+
 
                         // Today card
                         GlassCard {
@@ -154,28 +168,7 @@ struct TrackerView: View {
     }
 }
 
-// Reusable “glass” card with blur & rounded corners
-struct GlassCard<Content: View>: View {
-    let content: () -> Content
 
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 22)
-                .fill(Color.white.opacity(0.12))
-                .background(
-                    .ultraThinMaterial,
-                    in: RoundedRectangle(cornerRadius: 22)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 22)
-                        .stroke(Color.white.opacity(0.25), lineWidth: 1)
-                )
-
-            content()
-                .padding(18)
-        }
-    }
-}
 
 #Preview {
     ContentView()

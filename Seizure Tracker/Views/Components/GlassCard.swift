@@ -29,6 +29,3 @@ struct GlassCard<Content: View>: View {
     }
 }
 
-#Preview {
-    ContentView()
-}

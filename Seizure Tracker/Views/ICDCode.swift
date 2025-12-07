@@ -1,71 +1,85 @@
+//
+//  ICDCode.swift
+//  Seizure Tracker
+//
+//  Created by Martina Kolajová on 04.12.2025.
+//
 import Foundation
+import SwiftUI
 
-struct ICDCode: Identifiable {
+struct ICDSuggestion: Identifiable {
     let id = UUID()
     let code: String
     let name: String
 }
 
-@MainActor
 class ICD10Service: ObservableObject {
-    @Published var suggestions: [ICDCode] = []
-
-    private var searchTask: Task<Void, Never>?
-
+    @Published var suggestions: [ICDSuggestion] = []
+    
+    private var currentTask: URLSessionDataTask?
+    
     func search(term: String) {
-        // Cancel previous search (debounce)
-        searchTask?.cancel()
-
+        // Avoid spamming API for tiny inputs
         let trimmed = term.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.count >= 2 else {
-            suggestions = []
+            DispatchQueue.main.async {
+                self.suggestions = []
+            }
             return
         }
-
-        searchTask = Task {
-            // small delay so we don't call on every keystroke
-            try? await Task.sleep(for: .milliseconds(250))
-            guard !Task.isCancelled else { return }
-            await fetch(term: trimmed)
-        }
-    }
-
-    private func fetch(term: String) async {
+        
+        // Cancel previous request if user keeps typing
+        currentTask?.cancel()
+        
         var components = URLComponents(string: "https://clinicaltables.nlm.nih.gov/api/icd10cm/v3/search")!
         components.queryItems = [
-            .init(name: "sf", value: "code,name"),
-            .init(name: "df", value: "code,name"),
-            .init(name: "terms", value: term),
-            .init(name: "maxList", value: "15")
+            URLQueryItem(name: "sf", value: "code,name"),
+            URLQueryItem(name: "terms", value: trimmed)
         ]
-
+        
         guard let url = components.url else { return }
-
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-
-            // Response is a top-level JSON array, not an object:
-            // [ totalCount, [codes...], null-or-extra, [[code,name], ...] ]
-            guard let root = try JSONSerialization.jsonObject(with: data) as? [Any],
-                  root.count >= 4,
-                  let codes = root[1] as? [String],
-                  let display = root[3] as? [[Any]] else {
+        print("ICD URL:", url.absoluteString)
+        
+        currentTask = URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+            guard let self else { return }
+            
+            if let error = error as? URLError, error.code == .cancelled {
+                // request cancelled because user kept typing
                 return
             }
-
-            var results: [ICDCode] = []
-            for (idx, code) in codes.enumerated() {
-                guard idx < display.count,
-                      let pair = display[idx] as? [Any],
-                      pair.count >= 2,
-                      let name = pair[1] as? String else { continue }
-
-                results.append(ICDCode(code: code, name: name))
+            
+            guard let data = data, error == nil else {
+                print("ICD search error:", error?.localizedDescription ?? "unknown")
+                return
             }
-
-            suggestions = results
-        } catch {
-            print("ICD10 API error:", error)
+            
+            do {
+                // Response is: [count, [codes], ???, [[code, name], ...]]
+                guard let root = try JSONSerialization.jsonObject(with: data) as? [Any],
+                      root.count >= 4,
+                      let displayArray = root[3] as? [[Any]] else {
+                    print("Unexpected ICD response format:", String(data: data, encoding: .utf8) ?? "no string")
+                    return
+                }
+                
+                let newSuggestions: [ICDSuggestion] = displayArray.compactMap { item in
+                    guard item.count >= 2,
+                          let code = item[0] as? String,
+                          let name = item[1] as? String else {
+                        return nil
+                    }
+                    return ICDSuggestion(code: code, name: name)
+                }
+                
+                DispatchQueue.main.async {
+                    self.suggestions = newSuggestions
+                    print("Got \(newSuggestions.count) ICD suggestions")
+                }
+            } catch {
+                print("JSON parse error:", error)
+            }
         }
+        
+        currentTask?.resume()
     }
 }

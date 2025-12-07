@@ -5,6 +5,7 @@
 //  Created by Martina Kolajová on 02.12.2025.
 //
 import SwiftUI
+import SwiftUI
 
 struct WelcomeView: View {
     let onStart: () -> Void
@@ -37,19 +38,32 @@ struct WelcomeView: View {
 
                 Spacer()
 
-                Button(action: onStart) {
-                    Text("Get started")
-                        .font(.headline)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.white)
-                        .foregroundColor(.purple)
-                        .cornerRadius(16)
-                        .shadow(radius: 8, y: 4)
+                HStack {
+                    Spacer()
+                    Button(action: onStart) {
+                        HStack(spacing: 8) {
+                            Text("Create profile")
+                                .font(.headline)
+                            Image(systemName: "arrow.right.circle.fill")
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 10)
+                        .foregroundColor(.white)
+                        .background(
+                            .ultraThinMaterial,
+                            in: Capsule()
+                        )
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .shadow(color: .black.opacity(0.4), radius: 12, y: 6)
+                    Spacer()
                 }
                 .padding(.horizontal, 32)
                 .padding(.bottom, 40)
-                .shadow(color: .black.opacity(0.5), radius: 12, y: 6)
             }
         }
     }

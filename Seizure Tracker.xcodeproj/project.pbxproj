@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		2A42763D2EE2891A00174316 /* FuturedArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = 2A42763C2EE2891A00174316 /* FuturedArchitecture */; };
+		2A42763F2EE2891A00174316 /* FuturedHelpers in Frameworks */ = {isa = PBXBuildFile; productRef = 2A42763E2EE2891A00174316 /* FuturedHelpers */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		2A4276102EDE683700174316 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +57,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A42763F2EE2891A00174316 /* FuturedHelpers in Frameworks */,
+				2A42763D2EE2891A00174316 /* FuturedArchitecture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +119,8 @@
 			);
 			name = "Seizure Tracker";
 			packageProductDependencies = (
+				2A42763C2EE2891A00174316 /* FuturedArchitecture */,
+				2A42763E2EE2891A00174316 /* FuturedHelpers */,
 			);
 			productName = "Seizure Tracker";
 			productReference = 2A4276022EDE683500174316 /* Seizure Tracker.app */;
@@ -195,6 +204,9 @@
 			);
 			mainGroup = 2A4275F92EDE683500174316;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				2A42763B2EE2891A00174316 /* XCRemoteSwiftPackageReference "FuturedKit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2A4276032EDE683500174316 /* Products */;
 			projectDirPath = "";
@@ -558,6 +570,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		2A42763B2EE2891A00174316 /* XCRemoteSwiftPackageReference "FuturedKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/futuredapp/FuturedKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.4.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2A42763C2EE2891A00174316 /* FuturedArchitecture */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2A42763B2EE2891A00174316 /* XCRemoteSwiftPackageReference "FuturedKit" */;
+			productName = FuturedArchitecture;
+		};
+		2A42763E2EE2891A00174316 /* FuturedHelpers */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2A42763B2EE2891A00174316 /* XCRemoteSwiftPackageReference "FuturedKit" */;
+			productName = FuturedHelpers;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 2A4275FA2EDE683500174316 /* Project object */;
 }

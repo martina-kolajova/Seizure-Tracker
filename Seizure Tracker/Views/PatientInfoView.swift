@@ -40,6 +40,9 @@ struct PatientInfoView: View {
     @State private var extraNotes: String = ""
     
     @StateObject private var icdService = ICD10Service()
+    @StateObject private var drugService = DrugLabelService()
+
+
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -221,8 +224,8 @@ struct PatientInfoView: View {
                             icdService.search(term: newValue)
                         }
 
-                    Text("Echo: \(diagnosisText)")
-                        .foregroundColor(.secondary)
+                    //Text("Echo: \(diagnosisText)")
+                    //    .foregroundColor(.secondary)
 
                     TextField("Year diagnosed", text: $diagnosisYear)
                         .keyboardType(.numberPad)
@@ -252,13 +255,53 @@ struct PatientInfoView: View {
         case .medication:
             Form {
                 Section("Medication") {
-                    TextField("Medication (e.g. LEV 1000 mg bid…)",
-                              text: $medicationText,
-                              axis: .vertical)
-                        .lineLimit(3, reservesSpace: true)
+                    TextField("Start typing medication…", text: $medicationText)
+                        .autocorrectionDisabled()
+                        .onChange(of: medicationText) { oldValue, newValue in
+                            drugService.search(term: newValue)
+                        }
+
+                    // You can keep extra free-text notes here if you like:
+                    // TextField("Notes / dose (e.g. 1000 mg bid…)",
+                    //           text: $extraNotesForMeds,
+                    //           axis: .vertical)
+                    //     .lineLimit(3, reservesSpace: true)
+                }
+
+                if !drugService.suggestions.isEmpty {
+                    Section("Suggestions (FDA)") {
+                        ForEach(drugService.suggestions) { suggestion in
+                            Button {
+                                // Fill main field with the formatted name
+                                medicationText = suggestion.displayName
+                                drugService.suggestions = []
+                            } label: {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(suggestion.displayName)
+                                        .font(.headline)
+
+                                    if let g = suggestion.genericName,
+                                       let b = suggestion.brandName {
+                                        Text("generic: \(g), brand: \(b)")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    } else if let g = suggestion.genericName {
+                                        Text("generic: \(g)")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    } else if let b = suggestion.brandName {
+                                        Text("brand: \(b)")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             .navigationTitle("Medication")
+
 
         case .notes:
             Form {
@@ -281,3 +324,5 @@ struct PatientInfoView: View {
         onBack: { }
     )
 }
+
+

@@ -1,0 +1,51 @@
+{
+  "originHash" : "05452338893d113b8e0db01bd8df16f77332fc8887ee390ab121397947dd56b2",
+  "pins" : [
+    {
+      "identity" : "bindingkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mkj-is/BindingKit",
+      "state" : {
+        "revision" : "fe58851b967301ec5c391a2c34979b676b854f89",
+        "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "collectionconcurrencykit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/JohnSundell/CollectionConcurrencyKit",
+      "state" : {
+        "revision" : "b4f23e24b5a1bff301efc5e70871083ca029ff95",
+        "version" : "0.2.0"
+      }
+    },
+    {
+      "identity" : "futured-macros",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/futuredapp/futured-macros",
+      "state" : {
+        "revision" : "373c909afae0e7f39905fef7a3568042798130ad",
+        "version" : "0.2.0"
+      }
+    },
+    {
+      "identity" : "futuredkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/futuredapp/FuturedKit.git",
+      "state" : {
+        "revision" : "8e68ee12655a745cb4aa88569de15fb362f1b478",
+        "version" : "1.4.0"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-syntax.git",
+      "state" : {
+        "revision" : "0687f71944021d616d34d922343dcef086855920",
+        "version" : "600.0.1"
+      }
+    }
+  ],
+  "version" : 3
+}
