@@ -1,8 +1,8 @@
-# Seizure Tracker (EpiLog)
+# EpiLog
 
 Seizure Tracker is an iOS app built in SwiftUI that helps people with epilepsy (and their clinicians) keep a clear, structured log of seizures, triggers, and medications.  
 The goal is to replace messy paper diaries with a clean, modern, and pleasant-to-use app that makes patterns in seizures easier to spot.
-<img width="1206" height="2622" alt="Simulator Screenshot - iPhone 16 Pro - 2025-12-10 at 22 39 57" src="https://github.com/user-attachments/assets/18d01f2e-698a-4227-88d1-b4fa562f6183" />
+<img width="žéč" height="1311" alt="Simulator Screenshot - iPhone 16 Pro - 2025-12-10 at 22 39 57" src="https://github.com/user-attachments/assets/18d01f2e-698a-4227-88d1-b4fa562f6183" />
 
 ## Features
 
