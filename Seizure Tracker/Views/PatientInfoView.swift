@@ -21,11 +21,11 @@ struct PatientInfoView: View {
 
     // Sections for the sidebar
     enum InfoSection: String, CaseIterable, Identifiable, Hashable {
-        case demographics = "Demographics"
+        //case demographics = "Demographics"
         case personal     = "Personal info"
         case diagnosis    = "Diagnosis"
         case medication   = "Medication"
-        case notes        = "Notes"
+       // case notes        = "Notes"
 
         var id: String { rawValue }
     }
@@ -116,28 +116,43 @@ struct PatientInfoView: View {
             HStack {
                 GeometryReader { geo in
                     ZStack {
-                        // BIG BACKGROUND LOGO (half visible on the left)
+                        // Circle center fixed slightly off the LEFT edge
+                        let circleCenter = CGPoint(
+                            x: -geo.size.width * 0.10,
+                            y: geo.size.height * 0.5
+                        )
+
+                        // Logo (half visible on the left)
                         Image("logo-white")
                             .resizable()
                             .renderingMode(.template)
                             .foregroundColor(.white.opacity(0.7))
                             .scaledToFit()
-                            .frame(width: geo.size.height * 0.9)
-                            .position(
-                                x: -geo.size.width * 0.15,   // push off-screen to the left
-                                y: geo.size.height * 0.4
-                            )
+                            .frame(width: geo.size.height * 2)
+                            .position(circleCenter)
                             .allowsHitTesting(false)
 
-                        // RADIAL BUTTONS AROUND THE LOGO
-                        ForEach(Array(InfoSection.allCases.enumerated()), id: \.1) { index, section in
-                            let angle = angleForIndex(index, total: InfoSection.allCases.count)
-                            let radius = geo.size.height * 0.32
-                            let center = CGPoint(x: geo.size.width * 0.18,
-                                                 y: geo.size.height * 0.4)
+                        let totalSections = InfoSection.allCases.count
+                        let radius = geo.size.height * 0.36
 
-                            let x = center.x + cos(angle) * radius
-                            let y = center.y + sin(angle) * radius
+                        // Same angles as before: right half-arc
+                        let startAngle = -60.0 * .pi / 180.0
+                        let endAngle   =  60.0 * .pi / 180.0
+                        let angleStep  = totalSections > 1
+                            ? (endAngle - startAngle) / Double(totalSections - 1)
+                            : 0
+
+                        // 👉 constant shift of all buttons to the right
+                        let buttonOffsetX = geo.size.width * 0.22   // tweak this 0.22
+
+                        ForEach(Array(InfoSection.allCases.enumerated()), id: \.1) { index, section in
+                            let angle = startAngle + Double(index) * angleStep
+
+                            let baseX = circleCenter.x + cos(angle) * radius
+                            let baseY = circleCenter.y + sin(angle) * radius
+
+                            let x = baseX + buttonOffsetX
+                            let y = baseY
 
                             NavigationLink(value: section) {
                                 sectionPill(for: section)
@@ -147,12 +162,13 @@ struct PatientInfoView: View {
                         }
                     }
                 }
-                .frame(width: 260)   // left column width
+                .frame(width: 260)
 
                 Spacer()
             }
             .padding(.top, 10)
             .padding(.leading, 8)
+
 
 
             Spacer()
@@ -240,11 +256,11 @@ struct PatientInfoView: View {
 
     private func icon(for section: InfoSection) -> String {
         switch section {
-        case .demographics: return "person.fill"
+        //case .demographics: return "person.fill"
         case .personal:     return "heart.text.square"
         case .diagnosis:    return "waveform.path.ecg"
         case .medication:   return "pills.fill"
-        case .notes:        return "book.closed.fill"
+       // case .notes:        return "book.closed.fill"
         }
     }
 
@@ -253,13 +269,7 @@ struct PatientInfoView: View {
     @ViewBuilder
     private func sectionDetailView(_ section: InfoSection) -> some View {
         switch section {
-        case .demographics:
-            Form {
-                Section("Demographics") {
-                    TextField("Patient name", text: $patientName)
-                }
-            }
-            .navigationTitle("Demographics")
+    
 
         case .personal:
             Form {
@@ -273,115 +283,162 @@ struct PatientInfoView: View {
             .navigationTitle("Personal info")
 
         case .diagnosis:
-            Form {
-                Section("Diagnosis") {
+            ZStack {
+                MeshGradientView()
+                    .overlay(Color.black.opacity(0.40))
+                    .ignoresSafeArea()
 
-                    // DEBUG – so we know this view is really shown
-                    Text("Diagnosis view loaded")
-                        .foregroundColor(.secondary)
-                        .onAppear {
-                            print("DEBUG: Diagnosis view appeared")
+                ScrollView {
+                    VStack(spacing: 20) {
+
+                        // MARK: Diagnosis card
+                        VStack(alignment: .leading, spacing: 16) {
+
+                            // ⬇️ removed the "Diagnosis" title + debug text
+
+                            // Main diagnosis field
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Main diagnosis")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+
+                                TextField(
+                                    "Start typing diagnosis…",
+                                    text: $diagnosisText,
+                                    axis: .vertical      // multi-line
+                                )
+                                .lineLimit(1...3)
+                                .font(.body.weight(.semibold))
+                                .textFieldStyle(.plain)
+                                .autocorrectionDisabled()
+                                .onChange(of: diagnosisText) { newValue in
+                                    print("DEBUG: onChange fired, new diagnosisText =", newValue)
+                                    icdService.search(term: newValue)
+                                }
+
+                                Divider()
+                            }
+
+                            // Year field
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Year diagnosed")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+
+                                TextField("e.g. 2018", text: $diagnosisYear)
+                                    .keyboardType(.numberPad)
+                                    .textFieldStyle(.plain)
+
+                                Divider()
+                            }
                         }
+                        .padding(18)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                .fill(Color(.systemBackground).opacity(0.9))
+                        )
+                        .shadow(radius: 12, y: 6)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
 
-                    TextField("Start typing diagnosis…", text: $diagnosisText)
-                        .autocorrectionDisabled()
-                        .onAppear {
-                            print("DEBUG: Diagnosis TextField appeared")
-                        }
-                        .onChange(of: diagnosisText) { newValue in
-                            print("DEBUG: onChange fired, new diagnosisText =", newValue)
-                            icdService.search(term: newValue)
-                        }
+                        // Suggestions card stays the same...
+                        if !icdService.suggestions.isEmpty {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("Suggestions")
+                                    .font(.headline)
+                                    .foregroundColor(.secondary)
 
-                    //Text("Echo: \(diagnosisText)")
-                    //    .foregroundColor(.secondary)
+                                ForEach(icdService.suggestions) { suggestion in
+                                    Button {
+                                        diagnosisText = "\(suggestion.code) – \(suggestion.name)"
+                                        icdService.suggestions = []
+                                    } label: {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(suggestion.code)
+                                                .font(.subheadline.weight(.semibold))
+                                                .foregroundColor(.primary)
+                                            Text(suggestion.name)
+                                                .font(.footnote)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.vertical, 6)
+                                    }
+                                    .buttonStyle(.plain)
 
-                    TextField("Year diagnosed", text: $diagnosisYear)
-                        .keyboardType(.numberPad)
-                }
-
-                if !icdService.suggestions.isEmpty {
-                    Section("Suggestions") {
-                        ForEach(icdService.suggestions) { suggestion in
-                            Button {
-                                diagnosisText = "\(suggestion.code) – \(suggestion.name)"
-                                icdService.suggestions = []
-                            } label: {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(suggestion.code)
-                                        .font(.headline)
-                                    Text(suggestion.name)
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
+                                    Divider()
                                 }
                             }
+                            .padding(18)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                    .fill(Color(.systemBackground).opacity(0.9))
+                            )
+                            .shadow(radius: 12, y: 6)
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 24)
                         }
                     }
                 }
             }
             .navigationTitle("Diagnosis")
 
+
         case .medication:
-            Form {
-                Section("Medication") {
-                    TextField("Start typing medication…", text: $medicationText)
-                        .autocorrectionDisabled()
-                        .onChange(of: medicationText) { oldValue, newValue in
-                            drugService.search(term: newValue)
-                        }
-
-                    // You can keep extra free-text notes here if you like:
-                    // TextField("Notes / dose (e.g. 1000 mg bid…)",
-                    //           text: $extraNotesForMeds,
-                    //           axis: .vertical)
-                    //     .lineLimit(3, reservesSpace: true)
-                }
-
-                if !drugService.suggestions.isEmpty {
-                    Section("Suggestions (FDA)") {
-                        ForEach(drugService.suggestions) { suggestion in
-                            Button {
-                                // Fill main field with the formatted name
-                                medicationText = suggestion.displayName
-                                drugService.suggestions = []
-                            } label: {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(suggestion.displayName)
-                                        .font(.headline)
-
-                                    if let g = suggestion.genericName,
-                                       let b = suggestion.brandName {
-                                        Text("generic: \(g), brand: \(b)")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    } else if let g = suggestion.genericName {
-                                        Text("generic: \(g)")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    } else if let b = suggestion.brandName {
-                                        Text("brand: \(b)")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
+            ZStack {
+                MeshGradientView()
+                    .ignoresSafeArea()
+                Form {
+                    Section("Medication") {
+                        TextField("Start typing medication…", text: $medicationText)
+                            .autocorrectionDisabled()
+                            .onChange(of: medicationText) { oldValue, newValue in
+                                drugService.search(term: newValue)
+                            }
+                        
+                        // You can keep extra free-text notes here if you like:
+                        // TextField("Notes / dose (e.g. 1000 mg bid…)",
+                        //           text: $extraNotesForMeds,
+                        //           axis: .vertical)
+                        //     .lineLimit(3, reservesSpace: true)
+                    }
+                    
+                    if !drugService.suggestions.isEmpty {
+                        Section("Suggestions (FDA)") {
+                            ForEach(drugService.suggestions) { suggestion in
+                                Button {
+                                    // Fill main field with the formatted name
+                                    medicationText = suggestion.displayName
+                                    drugService.suggestions = []
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(suggestion.displayName)
+                                            .font(.headline)
+                                        
+                                        if let g = suggestion.genericName,
+                                           let b = suggestion.brandName {
+                                            Text("generic: \(g), brand: \(b)")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        } else if let g = suggestion.genericName {
+                                            Text("generic: \(g)")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        } else if let b = suggestion.brandName {
+                                            Text("brand: \(b)")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
+                .scrollContentBackground(.hidden)   // let the mesh show through
+                        .background(Color.clear)
+                    }
             .navigationTitle("Medication")
-
-
-        case .notes:
-            Form {
-                Section("Extra notes") {
-                    TextField("Anything else important…",
-                              text: $extraNotes,
-                              axis: .vertical)
-                        .lineLimit(4, reservesSpace: true)
-                }
-            }
-            .navigationTitle("Notes")
         }
     }
 }

@@ -27,7 +27,7 @@ struct MeshGradientView: View {
         )
         .ignoresSafeArea()
         .onAppear {
-            withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
+            withAnimation(.easeInOut(duration: 5).repeatForever(autoreverses: true)) {
                 isAnimating.toggle()
             }
         }
