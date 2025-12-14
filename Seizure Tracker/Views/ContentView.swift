@@ -25,7 +25,7 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            // 🔹 One shared background for all screens (no blinking)
+            // 🔹 One shared background for all screens 
             MeshGradientView()
 
             // 🔹 Foreground content that slides over the same background

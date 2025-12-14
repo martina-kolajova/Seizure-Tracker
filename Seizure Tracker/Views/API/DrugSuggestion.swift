@@ -111,7 +111,16 @@ class DrugLabelService: ObservableObject {
             }
 
             print("🟢 DrugLabel: got \(collected.count) results for '\(term)'")
-            suggestions = collected
+
+            // ✅ Keep first occurrence of each (generic, brand) pair
+            var seen = Set<String>()
+            let unique = collected.filter { s in
+                let key = "\(s.genericName?.lowercased() ?? "")|\(s.brandName?.lowercased() ?? "")"
+                return seen.insert(key).inserted
+            }
+
+            suggestions = unique
+
         } catch {
             if let urlError = error as? URLError, urlError.code == .cancelled {
                 return // expected

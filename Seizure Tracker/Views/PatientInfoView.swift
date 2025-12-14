@@ -1,8 +1,4 @@
-//
-//  PatientInfoView.swift
-//  Seizure Tracker
-//
-//  Created by Martina Kolajová on 02.12.2025.
+
 //
 
 //  PatientInfoView.swift
@@ -41,6 +37,10 @@ struct PatientInfoView: View {
     
     @StateObject private var icdService = ICD10Service()
     @StateObject private var drugService = DrugLabelService()
+    
+    @FocusState private var diagnosisFocused: Bool
+    @State private var didPickDiagnosis: Bool = false
+
 
 
 
@@ -294,8 +294,6 @@ struct PatientInfoView: View {
                         // MARK: Diagnosis card
                         VStack(alignment: .leading, spacing: 16) {
 
-                            // ⬇️ removed the "Diagnosis" title + debug text
-
                             // Main diagnosis field
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Main diagnosis")
@@ -341,33 +339,24 @@ struct PatientInfoView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 16)
 
-                        // Suggestions card stays the same...
+                        // Suggestions card
                         if !icdService.suggestions.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("Suggestions")
                                     .font(.headline)
                                     .foregroundColor(.secondary)
 
-                                ForEach(icdService.suggestions) { suggestion in
-                                    Button {
-                                        diagnosisText = "\(suggestion.code) – \(suggestion.name)"
-                                        icdService.suggestions = []
-                                    } label: {
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text(suggestion.code)
-                                                .font(.subheadline.weight(.semibold))
-                                                .foregroundColor(.primary)
-                                            Text(suggestion.name)
-                                                .font(.footnote)
-                                                .foregroundColor(.secondary)
-                                        }
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding(.vertical, 6)
-                                    }
-                                    .buttonStyle(.plain)
-
-                                    Divider()
+                                // ✅ Scrollable list with a visible right-side indicator
+                                SuggestionScrollWithIndicator(
+                                    items: icdService.suggestions,
+                                    height: 260
+                                ) { suggestion in
+                                    diagnosisText = "\(suggestion.code) – \(suggestion.name)"
+                                    icdService.suggestions = []
                                 }
+                                
+
+                                
                             }
                             .padding(18)
                             .background(
@@ -380,68 +369,223 @@ struct PatientInfoView: View {
                         }
                     }
                 }
+                // ✅ Disable the OUTER scroll when suggestions are visible,
+                // so your finger drag scrolls the suggestions list.
+                .scrollDisabled(!icdService.suggestions.isEmpty)
+               
+
             }
             .navigationTitle("Diagnosis")
+
+
+
 
 
         case .medication:
             ZStack {
                 MeshGradientView()
+                    .overlay(Color.black.opacity(0.40))
                     .ignoresSafeArea()
-                Form {
-                    Section("Medication") {
-                        TextField("Start typing medication…", text: $medicationText)
-                            .autocorrectionDisabled()
-                            .onChange(of: medicationText) { oldValue, newValue in
-                                drugService.search(term: newValue)
+
+                ScrollView {
+                    VStack(spacing: 20) {
+
+                        // MARK: Medication card (same as Diagnosis card style)
+                        VStack(alignment: .leading, spacing: 16) {
+
+                            // Main medication field
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Medication")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+
+                                TextField(
+                                    "Start typing medication…",
+                                    text: $medicationText,
+                                    axis: .vertical
+                                )
+                                .lineLimit(1...3)
+                                .font(.body.weight(.semibold))
+                                .textFieldStyle(.plain)
+                                .autocorrectionDisabled()
+                                .onChange(of: medicationText) { _, newValue in
+                                    drugService.search(term: newValue)
+                                }
+
+                                Divider()
                             }
-                        
-                        // You can keep extra free-text notes here if you like:
-                        // TextField("Notes / dose (e.g. 1000 mg bid…)",
-                        //           text: $extraNotesForMeds,
-                        //           axis: .vertical)
-                        //     .lineLimit(3, reservesSpace: true)
-                    }
-                    
-                    if !drugService.suggestions.isEmpty {
-                        Section("Suggestions (FDA)") {
-                            ForEach(drugService.suggestions) { suggestion in
-                                Button {
-                                    // Fill main field with the formatted name
-                                    medicationText = suggestion.displayName
+
+                            // Optional notes (keep if you want)
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Notes / dose")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+
+                                TextField(
+                                    "e.g. 1000 mg bid…",
+                                    text: $extraNotes,
+                                    axis: .vertical
+                                )
+                                .lineLimit(1...3)
+                                .textFieldStyle(.plain)
+
+                                Divider()
+                            }
+                        }
+                        .padding(18)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                .fill(Color(.systemBackground).opacity(0.9))
+                        )
+                        .shadow(radius: 12, y: 6)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
+
+                        // MARK: Suggestions card (same idea as Diagnosis)
+                        if !drugService.suggestions.isEmpty {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("Suggestions (FDA)")
+                                    .font(.headline)
+                                    .foregroundColor(.secondary)
+
+                                SuggestionScrollWithIndicator(
+                                    items: drugService.suggestions.map { s in
+                                        // Prefer "human" names first
+                                        let title = (s.brandName?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false)
+                                            ? s.brandName!
+                                            : (s.genericName?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false)
+                                                ? s.genericName!
+                                                : s.displayName
+
+                                        var parts: [String] = []
+                                        if let g = s.genericName, !g.isEmpty { parts.append("generic: \(g)") }
+                                        if let b = s.brandName, !b.isEmpty { parts.append("brand: \(b)") }
+                                        let subtitle = parts.isEmpty ? " " : parts.joined(separator: " • ")
+
+                                        return ICDSuggestion(code: title, name: subtitle)
+                                    },
+                                    height: 260
+                                ) { picked in
+                                    // Fill the text field with the chosen med name (NOT the ingredients)
+                                    medicationText = picked.code
                                     drugService.suggestions = []
-                                } label: {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(suggestion.displayName)
-                                            .font(.headline)
-                                        
-                                        if let g = suggestion.genericName,
-                                           let b = suggestion.brandName {
-                                            Text("generic: \(g), brand: \(b)")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        } else if let g = suggestion.genericName {
-                                            Text("generic: \(g)")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        } else if let b = suggestion.brandName {
-                                            Text("brand: \(b)")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-                                    }
                                 }
                             }
+                            .padding(18)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                    .fill(Color(.systemBackground).opacity(0.9))
+                            )
+                            .shadow(radius: 12, y: 6)
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 24)
+
                         }
                     }
                 }
-                .scrollContentBackground(.hidden)   // let the mesh show through
-                        .background(Color.clear)
-                    }
+                // ✅ Same behavior as Diagnosis: when suggestions exist,
+                // lock the OUTER scroll so the inner list scrolls naturally.
+                .scrollDisabled(!drugService.suggestions.isEmpty)
+            }
             .navigationTitle("Medication")
+
         }
     }
 }
+
+
+private struct SuggestionScrollWithIndicator: View {
+    let items: [ICDSuggestion]
+    let height: CGFloat
+    let onSelect: (ICDSuggestion) -> Void
+
+    @State private var contentHeight: CGFloat = 1
+    @State private var scrollOffset: CGFloat = 0
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(items) { suggestion in
+                        Button {
+                            onSelect(suggestion)
+                        } label: {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(suggestion.code)
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundColor(.primary)
+
+                                Text(suggestion.name)
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 6)
+                            .contentShape(Rectangle()) // helps scrolling through buttons
+                        }
+                        .buttonStyle(.plain)
+
+                        Divider()
+                    }
+                }
+                // measure total content height
+                .background(
+                    GeometryReader { geo in
+                        Color.clear
+                            .onAppear { contentHeight = max(geo.size.height, 1) }
+                            .onChange(of: geo.size.height) { _, newValue in
+                                contentHeight = max(newValue, 1)
+                            }
+                    }
+                )
+                // track scroll offset
+                .background(
+                    GeometryReader { geo in
+                        Color.clear
+                            .preference(key: ScrollOffsetKey.self, value: geo.frame(in: .named("suggestions")).minY)
+                    }
+                )
+            }
+            .coordinateSpace(name: "suggestions")
+            .onPreferenceChange(ScrollOffsetKey.self) { minY in
+                scrollOffset = -minY
+            }
+            .frame(height: height)
+
+            // Custom indicator (track + thumb)
+            if contentHeight > height {
+                let trackH = height
+                let thumbH = max(24, trackH * (height / contentHeight))
+                let maxOffset = max(contentHeight - height, 1)
+                let progress = min(max(scrollOffset / maxOffset, 0), 1)
+                let thumbY = (trackH - thumbH) * progress
+
+                ZStack(alignment: .top) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Color.primary.opacity(0.10))
+                        .frame(width: 4, height: trackH)
+
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Color.primary.opacity(0.35))
+                        .frame(width: 4, height: thumbH)
+                        .offset(y: thumbY)
+                }
+                .padding(.trailing, 2)
+                .allowsHitTesting(false)
+            }
+        }
+    }
+}
+
+private struct ScrollOffsetKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+
 
 #Preview {
     PatientInfoView(
