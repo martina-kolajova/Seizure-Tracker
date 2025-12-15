@@ -377,10 +377,6 @@ struct PatientInfoView: View {
             }
             .navigationTitle("Diagnosis")
 
-
-
-
-
         case .medication:
             ZStack {
                 MeshGradientView()
@@ -493,7 +489,6 @@ struct PatientInfoView: View {
     }
 }
 
-
 private struct SuggestionScrollWithIndicator: View {
     let items: [ICDSuggestion]
     let height: CGFloat
@@ -507,6 +502,17 @@ private struct SuggestionScrollWithIndicator: View {
 
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
+
+                    // ✅ Offset sentinel (tracks scroll position reliably)
+                    GeometryReader { geo in
+                        Color.clear
+                            .preference(
+                                key: ScrollOffsetKey.self,
+                                value: -geo.frame(in: .named("suggestions")).minY
+                            )
+                    }
+                    .frame(height: 0)
+
                     ForEach(items) { suggestion in
                         Button {
                             onSelect(suggestion)
@@ -522,14 +528,14 @@ private struct SuggestionScrollWithIndicator: View {
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.vertical, 6)
-                            .contentShape(Rectangle()) // helps scrolling through buttons
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
 
                         Divider()
                     }
                 }
-                // measure total content height
+                // ✅ measure total content height
                 .background(
                     GeometryReader { geo in
                         Color.clear
@@ -539,17 +545,10 @@ private struct SuggestionScrollWithIndicator: View {
                             }
                     }
                 )
-                // track scroll offset
-                .background(
-                    GeometryReader { geo in
-                        Color.clear
-                            .preference(key: ScrollOffsetKey.self, value: geo.frame(in: .named("suggestions")).minY)
-                    }
-                )
             }
             .coordinateSpace(name: "suggestions")
-            .onPreferenceChange(ScrollOffsetKey.self) { minY in
-                scrollOffset = -minY
+            .onPreferenceChange(ScrollOffsetKey.self) { offset in
+                scrollOffset = offset
             }
             .frame(height: height)
 
@@ -577,6 +576,7 @@ private struct SuggestionScrollWithIndicator: View {
         }
     }
 }
+
 
 private struct ScrollOffsetKey: PreferenceKey {
     static var defaultValue: CGFloat = 0

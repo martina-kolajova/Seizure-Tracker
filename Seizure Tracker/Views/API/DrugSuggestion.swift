@@ -38,43 +38,39 @@ class DrugLabelService: ObservableObject {
     }
 
     private func fetch(term: String) async {
-        var components = URLComponents(string: "https://api.fda.gov/drug/label.json")!
+        var components = URLComponents(string: "https://api.fda.gov/drug/ndc.json")!
 
-        // Simple search in generic OR brand name, wildcard after the term
         let q = term.lowercased()
+
+        // NDC endpoint: regular fields brand_name / generic_name work great for autocomplete
         components.queryItems = [
-            .init(
-                name: "search",
-                value: "openfda.generic_name:\"\(q)*\"+openfda.brand_name:\"\(q)*\""
-            ),
-            .init(name: "limit", value: "10")
+            .init(name: "search", value: "brand_name:\(q)* OR generic_name:\(q)*"),
+            .init(name: "limit", value: "25")
         ]
 
         guard let url = components.url else { return }
+        print("DrugNDC URL:", url.absoluteString)
 
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
 
-            // Optional: check HTTP status
             if let http = response as? HTTPURLResponse, http.statusCode != 200 {
-                print("🔴 DrugLabel HTTP error:", http.statusCode)
+                // NDC also returns 404 for no matches sometimes — not fatal during typing
+                print("DrugNDC HTTP:", http.statusCode)
             }
 
             guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                print("DrugLabel parsing failed: root is not a dictionary")
                 suggestions = []
                 return
             }
 
-            // If the API returned an error object, log it and bail out
             if let errorInfo = root["error"] as? [String: Any] {
-                print("🔴 DrugLabel API error object:", errorInfo)
+                // No matches → empty suggestions (normal while typing)
                 suggestions = []
                 return
             }
 
             guard let resultsArray = root["results"] as? [[String: Any]] else {
-                print("DrugLabel parsing failed: 'results' missing or wrong type")
                 suggestions = []
                 return
             }
@@ -82,51 +78,48 @@ class DrugLabelService: ObservableObject {
             var collected: [DrugSuggestion] = []
 
             for item in resultsArray {
-                guard let openfda = item["openfda"] as? [String: Any] else { continue }
-
-                let generic = (openfda["generic_name"] as? [String])?.first
-                let brand   = (openfda["brand_name"] as? [String])?.first
-
-                if generic == nil && brand == nil { continue }
+                let brand   = item["brand_name"] as? String
+                let generic = item["generic_name"] as? String
+                if brand == nil && generic == nil { continue }
 
                 let display: String
                 switch (generic, brand) {
                 case let (g?, b?):
-                    display = "\(g.uppercased()) (\(b.uppercased()))"
+                    display = "\(b) • \(g)"
                 case let (g?, nil):
-                    display = g.uppercased()
+                    display = g
                 case let (nil, b?):
-                    display = b.uppercased()
+                    display = b
                 default:
                     continue
                 }
 
-                collected.append(
-                    DrugSuggestion(
-                        displayName: display,
-                        genericName: generic,
-                        brandName: brand
-                    )
-                )
+                collected.append(.init(displayName: display, genericName: generic, brandName: brand))
             }
 
-            print("🟢 DrugLabel: got \(collected.count) results for '\(term)'")
-
-            // ✅ Keep first occurrence of each (generic, brand) pair
+            // Dedupe by (generic, brand)
             var seen = Set<String>()
             let unique = collected.filter { s in
                 let key = "\(s.genericName?.lowercased() ?? "")|\(s.brandName?.lowercased() ?? "")"
                 return seen.insert(key).inserted
             }
 
-            suggestions = unique
+            // Sort: brand prefix first
+            let lowerTerm = term.lowercased()
+            let sorted = unique.sorted {
+                let aPref = ($0.brandName?.lowercased().hasPrefix(lowerTerm) ?? false)
+                let bPref = ($1.brandName?.lowercased().hasPrefix(lowerTerm) ?? false)
+                if aPref != bPref { return aPref && !bPref }
+                return ($0.brandName ?? $0.genericName ?? "") < ($1.brandName ?? $1.genericName ?? "")
+            }
+
+            suggestions = sorted
 
         } catch {
-            if let urlError = error as? URLError, urlError.code == .cancelled {
-                return // expected
-            }
-            print("🔴 DrugLabel API error:", error)
+            if let urlError = error as? URLError, urlError.code == .cancelled { return }
+            print("🔴 DrugNDC error:", error)
             suggestions = []
         }
     }
+
 }
