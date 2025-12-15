@@ -26,7 +26,19 @@ struct PatientInfoView: View {
         var id: String { rawValue }
     }
 
-    @State private var path: [InfoSection] = []
+    @State private var path: [InfoSection]
+
+    init(
+        patientName: Binding<String>,
+        onContinue: @escaping () -> Void,
+        onBack: @escaping () -> Void,
+        initialSection: InfoSection? = nil
+    ) {
+        self._patientName = patientName
+        self.onContinue = onContinue
+        self.onBack = onBack
+        self._path = State(initialValue: initialSection.map { [$0] } ?? [])
+    }
 
     // Local fields (can be lifted up later if you want)
     @State private var personalNotes: String = ""

@@ -5,25 +5,31 @@
 //  Created by Martina Kolajová on 02.12.2025.
 //
 
-import SwiftUI
 
+
+import SwiftUI
 
 struct TrackerView: View {
     let patientName: String
     let onBack: () -> Void
 
-    // Simple in-memory state
     @State private var todayCount: Int = 0
     @State private var totalCount: Int = 0
     @State private var selectedType: String = "Focal"
     @State private var note: String = ""
+
+    enum ProfileTab: String, Identifiable {
+        case personal, diagnosis, medication
+        var id: String { rawValue }
+    }
+
+    @State private var activeTab: ProfileTab? = nil
 
     let seizureTypes = ["Focal", "Generalized", "Aura only", "Unknown"]
 
     var body: some View {
         NavigationStack {
             ZStack {
-                // Darker violet gradient background
                 LinearGradient(
                     colors: [
                         Color(red: 60/255, green: 0/255, blue: 110/255),
@@ -39,9 +45,7 @@ struct TrackerView: View {
 
                         // Back + patient name
                         HStack {
-                            Button {
-                                onBack()
-                            } label: {
+                            Button(action: onBack) {
                                 Image(systemName: "chevron.left")
                                     .foregroundColor(.white)
                                     .padding(8)
@@ -59,10 +63,6 @@ struct TrackerView: View {
                         }
                         .padding(.top, 10)
 
-                        // (keep your existing header + cards below this)
-
-
-                        // Today card
                         GlassCard {
                             VStack(alignment: .leading, spacing: 12) {
                                 Text("Today")
@@ -101,7 +101,6 @@ struct TrackerView: View {
                             }
                         }
 
-                        // Total card
                         GlassCard {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Total logged")
@@ -121,14 +120,12 @@ struct TrackerView: View {
                             }
                         }
 
-                        // Details card
                         GlassCard {
                             VStack(alignment: .leading, spacing: 16) {
                                 Text("Details for next seizure log")
                                     .font(.headline)
                                     .foregroundColor(.white.opacity(0.9))
 
-                                // Seizure type
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text("Type")
                                         .font(.caption)
@@ -142,7 +139,6 @@ struct TrackerView: View {
                                     .pickerStyle(.segmented)
                                 }
 
-                                // Note
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text("Note (optional)")
                                         .font(.caption)
@@ -161,13 +157,87 @@ struct TrackerView: View {
                             .padding(.bottom, 20)
                     }
                     .padding()
+                    // IMPORTANT: add bottom padding so last content isn't hidden under bar
+                    .padding(.bottom, 80)
                 }
             }
             .navigationBarHidden(true)
+            .safeAreaInset(edge: .bottom) {
+                ProfileBottomBar(activeTab: $activeTab)
+                    .padding(.horizontal, 14)
+                    .padding(.bottom, 10)
+            }
+            .sheet(item: $activeTab) { tab in
+                profileSheet(tab)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func profileSheet(_ tab: ProfileTab) -> some View {
+        switch tab {
+        case .personal:
+            ZStack {
+                MeshGradientView().ignoresSafeArea()
+                Form {
+                    Section("Personal info") {
+                        Text("Coming from profile…")
+                    }
+                }
+                .scrollContentBackground(.hidden)
+            }
+
+        case .diagnosis:
+            PatientInfoView(
+                patientName: .constant(patientName),
+                onContinue: { },
+                onBack: { },
+                initialSection: .diagnosis
+            )
+
+        case .medication:
+            PatientInfoView(
+                patientName: .constant(patientName),
+                onContinue: { },
+                onBack: { },
+                initialSection: .medication
+            
+
+            )
         }
     }
 }
 
+private struct ProfileBottomBar: View {
+    @Binding var activeTab: TrackerView.ProfileTab?
+
+    var body: some View {
+        HStack(spacing: 10) {
+            barButton("Personal", systemImage: "heart.text.square") { activeTab = .personal }
+            barButton("Diagnosis", systemImage: "waveform.path.ecg") { activeTab = .diagnosis }
+            barButton("Meds", systemImage: "pills.fill") { activeTab = .medication }
+        }
+        .padding(10)
+        .background(.ultraThinMaterial, in: Capsule())
+        .overlay(Capsule().stroke(Color.white.opacity(0.22), lineWidth: 1))
+        .shadow(color: .black.opacity(0.35), radius: 16, y: 8)
+    }
+
+    private func barButton(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: systemImage)
+                Text(title).font(.subheadline.weight(.semibold))
+            }
+            .foregroundStyle(.white)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 14)
+            .background(Color.white.opacity(0.12), in: Capsule())
+            .overlay(Capsule().stroke(Color.white.opacity(0.18), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+}
 
 
 #Preview {
