@@ -41,7 +41,7 @@ struct ContentView: View {
                     .transition(currentTransition)
 
                 case .patientInfo:
-                    PatientInfoView(
+                    PatientDelegate(
                         patientName: $patientName,
                         onContinue: {
                             navDirection = .forward

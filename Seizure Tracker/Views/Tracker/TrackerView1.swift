@@ -5,7 +5,7 @@
 //  Created by Martina Kolajová on 02.12.2025.
 //
 
-
+/*
 
 import SwiftUI
 
@@ -188,7 +188,7 @@ struct TrackerView: View {
             }
 
         case .diagnosis:
-            PatientInfoView(
+            PatientDelegate(
                 patientName: .constant(patientName),
                 onContinue: { },
                 onBack: { },
@@ -196,7 +196,7 @@ struct TrackerView: View {
             )
 
         case .medication:
-            PatientInfoView(
+            PatientDelegate(
                 patientName: .constant(patientName),
                 onContinue: { },
                 onBack: { },
@@ -243,3 +243,4 @@ private struct ProfileBottomBar: View {
 #Preview {
     ContentView()
 }
+*/
