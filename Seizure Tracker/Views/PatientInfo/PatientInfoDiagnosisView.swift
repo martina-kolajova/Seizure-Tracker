@@ -28,7 +28,7 @@ struct PatientInfoDiagnosisView: View {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Main diagnosis")
                                 .font(.caption)
-                                .foregroundColor(.white)
+                                .foregroundColor(.secondary)
 
                             TextField("Start typing diagnosis…", text: $diagnosisText, axis: .vertical)
                                 .lineLimit(1...3)

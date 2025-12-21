@@ -14,11 +14,14 @@ struct TrackerView: View {
     let patientName: String
     let onBack: () -> Void
 
+
+
     @State private var todayCount: Int = 0
     @State private var totalCount: Int = 0
-    @State private var hourlyCounts: [Int] = Array(repeating: 0, count: 24)
+    @State private var hourlyCounts: [Int] = Array(repeating: 0, count: 12)
+    @State private var violetPhase: Double = 0
 
-    @State private var ringPhase: Double = 0
+    //@State private var ringPhase: Double = 0
 
     enum ProfileTab: String, Identifiable {
         case personal, diagnosis, medication
@@ -35,10 +38,11 @@ struct TrackerView: View {
                 todayCount: $todayCount,
                 totalCount: $totalCount,
                 activeTab: $activeTab,
-                hourlyCounts: hourlyCounts,
-                ringPhase: ringPhase,   // or $ringPhase depending on TrackerLayout
+                hourlyCounts: hourlyCounts,// or
                 onLog: logNow,
-                onUndo: undoLastSimple
+                onUndo: undoLastSimple,
+                violetPhase: violetPhase,
+                
             )
             .sheet(item: $activeTab) { tab in
                 profileSheet(tab)
@@ -46,19 +50,24 @@ struct TrackerView: View {
         }
     }
 
+    // was 24
+
+
     private func logNow() {
         todayCount += 1
         totalCount += 1
 
-        let hour = Calendar.current.component(.hour, from: Date())
-        if (0..<24).contains(hour) {
-            hourlyCounts[hour] += 1
-        }
+        let hour24 = Calendar.current.component(.hour, from: Date())
+        let hour12 = hour24 % 12
+        hourlyCounts[hour12] += 1
 
-        withAnimation(.easeInOut(duration: 1.6)) {
-            ringPhase += 0.35
+        // ✅ only darken (clamped)
+        withAnimation(.easeInOut(duration: 1.2)) {
+            violetPhase = min(violetPhase + 0.06, 1.0)   // slower darkenin
+
         }
     }
+
 
     private func undoLastSimple() {
         if todayCount > 0 { todayCount -= 1 }
