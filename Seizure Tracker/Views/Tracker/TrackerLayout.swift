@@ -14,8 +14,8 @@ struct TrackerLayout: View {
     @Binding var totalCount: Int
     @Binding var activeTab: TrackerView.ProfileTab?
  
-
     
+
     let hourlyCounts: [Int]
     
     let onLog: () -> Void
@@ -35,6 +35,7 @@ struct TrackerLayout: View {
    
 
     // MARK: - Today context state
+    @State private var showTodayDetails = false
 
     @State private var mood: MoodChoice = .ok
     @State private var sleep: SleepChoice = .ok
@@ -48,6 +49,7 @@ struct TrackerLayout: View {
 
    
     @State private var note: String = ""
+    
 
     var body: some View {
         ZStack {
@@ -62,8 +64,9 @@ struct TrackerLayout: View {
 
                     GlassCard { distributionCard }
                     GlassCard {
-                        TodayCard(
-                                todayCount: $todayCount,
+                        TodayCardContainer(
+                            todayCount:$todayCount,
+                                showDetails: $showTodayDetails,  
                                 mood: $mood,
                                 sleep: $sleep,
                                 stress: $stress,
@@ -126,38 +129,7 @@ struct TrackerLayout: View {
 
     // MARK: - Today card (count + vertical bar)
 
-    private var todayCard: some View {
-        let progress = min(1.0, Double(todayCount) / Double(max(1, barMaxCount)))
-
-        return VStack(alignment: .leading, spacing: 14) {
-            Text("Today")
-                .font(.headline)
-                .foregroundColor(.white.opacity(0.92))
-
-            HStack(alignment: .center, spacing: 14) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("\(todayCount)")
-                        .font(.system(size: 58, weight: .bold))
-                        .foregroundColor(.white)
-
-                    Text("seizures")
-                        .foregroundColor(.white.opacity(0.8))
-                }
-
-                Spacer()
-
-                GrowingCenterBar(progress: progress)
-                    .frame(width: 28, height: 70)
-            }
-
-            Button(action: onUndo) {
-                Label("Undo last", systemImage: "arrow.uturn.left")
-            }
-            .buttonStyle(.bordered)
-            .tint(.white.opacity(0.92))
-            .foregroundColor(.purple)
-        }
-    }
+   
 
     // MARK: - Distribution card (donut ring)
 

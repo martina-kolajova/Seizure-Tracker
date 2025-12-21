@@ -1,3 +1,12 @@
+//
+//  TodayCardContainer.swift
+//  Seizure Tracker
+//
+//  Created by Martina Kolajová on 20.12.2025.
+//
+
+import SwiftUI
+
 struct TodayCardContainer: View {
     @Binding var todayCount: Int
     @Binding var showDetails: Bool
@@ -33,6 +42,7 @@ struct TodayCardContainer: View {
                         HStack(alignment: .firstTextBaseline, spacing: 10) {
                             Text("\(todayCount)")
                                 .font(.system(size: 44, weight: .bold))
+                                .foregroundColor(.white.opacity(0.95))
                             Text("seizures")
                                 .foregroundColor(.white.opacity(0.75))
                         }

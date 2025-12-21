@@ -14,40 +14,10 @@
             filePath = "Seizure Tracker/Views/Tracker/TrackerLayout.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "249"
-            endingLineNumber = "249"
+            startingLineNumber = "221"
+            endingLineNumber = "221"
             landmarkName = "DonutRadialBarRing"
             landmarkType = "14">
-            <Locations>
-               <Location
-                  uuid = "A9A116FA-A525-4184-809F-B58772064866 - 9705eb1093f74f18"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Seizure_Tracker.DonutRadialBarRing.body.getter : some"
-                  moduleName = "Seizure Tracker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/martinakolajova/Desktop/app_develop/Playground/Seizure%20Tracker/Seizure%20Tracker/Views/Tracker/TrackerLayout.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "249"
-                  endingLineNumber = "249">
-               </Location>
-               <Location
-                  uuid = "A9A116FA-A525-4184-809F-B58772064866 - 195e2bbb0076b51c"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (SwiftUI.GeometryProxy) -&gt; SwiftUI.Canvas&lt;SwiftUI.EmptyView&gt; in Seizure_Tracker.DonutRadialBarRing.body.getter : some"
-                  moduleName = "Seizure Tracker.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/martinakolajova/Desktop/app_develop/Playground/Seizure%20Tracker/Seizure%20Tracker/Views/Tracker/TrackerLayout.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "249"
-                  endingLineNumber = "249">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
