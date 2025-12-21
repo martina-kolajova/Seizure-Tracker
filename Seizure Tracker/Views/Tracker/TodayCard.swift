@@ -92,6 +92,7 @@ struct TodayCard: View {
                     .foregroundColor(.white.opacity(0.75))
 
                 FlowChipsMulti(items: TriggerChoice.allCases, selection: $triggers)
+
             }
 
             // Toggles
@@ -145,7 +146,7 @@ enum StressChoice: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-enum TriggerChoice: String, CaseIterable, Identifiable {
+enum TriggerChoice: String, CaseIterable, Identifiable, Hashable {
     case none = "None"
     case missedMeds = "Missed meds"
     case sleepDeprivation = "Sleep loss"
@@ -156,6 +157,7 @@ enum TriggerChoice: String, CaseIterable, Identifiable {
     case other = "Other"
     var id: String { rawValue }
 }
+
 
 // MARK: - UI building blocks
 
@@ -184,12 +186,11 @@ struct ChipRowSingle<T: CaseIterable & Identifiable & RawRepresentable>: View wh
     }
 }
 
-struct FlowChipsMulti<T: CaseIterable & Identifiable & RawRepresentable>: View where T.RawValue == String {
+struct FlowChipsMulti<T: CaseIterable & Identifiable & RawRepresentable & Hashable>: View where T.RawValue == String {
     let items: [T]
     @Binding var selection: Set<T>
 
     var body: some View {
-        // Simple wrap using adaptive grid
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 98), spacing: 8)], spacing: 8) {
             ForEach(items) { item in
                 let isOn = selection.contains(item)
@@ -200,6 +201,7 @@ struct FlowChipsMulti<T: CaseIterable & Identifiable & RawRepresentable>: View w
         }
     }
 }
+
 
 struct Chip: View {
     let title: String

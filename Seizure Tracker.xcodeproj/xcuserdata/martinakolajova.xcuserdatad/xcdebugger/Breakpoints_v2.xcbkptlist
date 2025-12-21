@@ -14,38 +14,38 @@
             filePath = "Seizure Tracker/Views/Tracker/TrackerLayout.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "216"
-            endingLineNumber = "216"
+            startingLineNumber = "249"
+            endingLineNumber = "249"
             landmarkName = "DonutRadialBarRing"
             landmarkType = "14">
             <Locations>
                <Location
-                  uuid = "A9A116FA-A525-4184-809F-B58772064866 - fa68f4cfb43eb4e4"
+                  uuid = "A9A116FA-A525-4184-809F-B58772064866 - 9705eb1093f74f18"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "Seizure_Tracker.GrowingCenterBar.body.getter : some"
+                  symbolName = "Seizure_Tracker.DonutRadialBarRing.body.getter : some"
                   moduleName = "Seizure Tracker.debug.dylib"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/martinakolajova/Desktop/app_develop/Playground/Seizure%20Tracker/Seizure%20Tracker/Views/Tracker/TrackerLayout.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "216"
-                  endingLineNumber = "216">
+                  startingLineNumber = "249"
+                  endingLineNumber = "249">
                </Location>
                <Location
-                  uuid = "A9A116FA-A525-4184-809F-B58772064866 - 799b83f48b0b60de"
+                  uuid = "A9A116FA-A525-4184-809F-B58772064866 - 195e2bbb0076b51c"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (SwiftUI.GeometryProxy) -&gt; &lt;&lt;opaque return type of SwiftUI.View.overlay&lt;&#x3c4;_0_0 where &#x3c4;_1_0: SwiftUI.View&gt;(_: &#x3c4;_1_0, alignment: SwiftUI.Alignment) -&gt; some&gt;&gt;.0 in Seizure_Tracker.GrowingCenterBar.body.getter : some"
+                  symbolName = "closure #1 (SwiftUI.GeometryProxy) -&gt; SwiftUI.Canvas&lt;SwiftUI.EmptyView&gt; in Seizure_Tracker.DonutRadialBarRing.body.getter : some"
                   moduleName = "Seizure Tracker.debug.dylib"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/martinakolajova/Desktop/app_develop/Playground/Seizure%20Tracker/Seizure%20Tracker/Views/Tracker/TrackerLayout.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "216"
-                  endingLineNumber = "216">
+                  startingLineNumber = "249"
+                  endingLineNumber = "249">
                </Location>
             </Locations>
          </BreakpointContent>

@@ -8,7 +8,7 @@
 
 
 import SwiftUI
-import SwiftUI
+
 
 struct TrackerView: View {
     let patientName: String
@@ -22,7 +22,9 @@ struct TrackerView: View {
     @State private var violetPhase: Double = 0
 
     //@State private var ringPhase: Double = 0
-
+    @State private var loggedBins: [Int] = []
+    
+    
     enum ProfileTab: String, Identifiable {
         case personal, diagnosis, medication
         var id: String { rawValue }
@@ -38,10 +40,10 @@ struct TrackerView: View {
                 todayCount: $todayCount,
                 totalCount: $totalCount,
                 activeTab: $activeTab,
-                hourlyCounts: hourlyCounts,// or
+                hourlyCounts: hourlyCounts,
                 onLog: logNow,
                 onUndo: undoLastSimple,
-                violetPhase: violetPhase,
+                violetPhase: violetPhase
                 
             )
             .sheet(item: $activeTab) { tab in
@@ -54,25 +56,40 @@ struct TrackerView: View {
 
 
     private func logNow() {
+        // which hour bin (12-hour ring)
+        let hour12 = Calendar.current.component(.hour, from: Date()) % 12
+
         todayCount += 1
         totalCount += 1
-
-        let hour24 = Calendar.current.component(.hour, from: Date())
-        let hour12 = hour24 % 12
         hourlyCounts[hour12] += 1
 
-        // ✅ only darken (clamped)
-        withAnimation(.easeInOut(duration: 1.2)) {
-            violetPhase = min(violetPhase + 0.06, 1.0)   // slower darkenin
+        // remember it so undo works
+        loggedBins.append(hour12)
 
+        withAnimation(.easeInOut(duration: 1.2)) {
+            violetPhase = min(violetPhase + 0.06, 1.0)
         }
     }
 
 
+
+
     private func undoLastSimple() {
+        guard let lastBin = loggedBins.popLast() else { return }
+
         if todayCount > 0 { todayCount -= 1 }
         if totalCount > 0 { totalCount -= 1 }
+
+        if (0..<hourlyCounts.count).contains(lastBin) {
+            hourlyCounts[lastBin] = max(0, hourlyCounts[lastBin] - 1)
+        }
+
+        // optional: lighten a bit when undo
+        withAnimation(.easeInOut(duration: 0.6)) {
+            violetPhase = max(0, violetPhase - 0.04)
+        }
     }
+
 
     @ViewBuilder
     private func profileSheet(_ tab: ProfileTab) -> some View {

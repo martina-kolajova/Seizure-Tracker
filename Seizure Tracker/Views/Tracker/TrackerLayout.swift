@@ -13,6 +13,7 @@ struct TrackerLayout: View {
     @Binding var todayCount: Int
     @Binding var totalCount: Int
     @Binding var activeTab: TrackerView.ProfileTab?
+ 
 
     
     let hourlyCounts: [Int]
@@ -30,6 +31,23 @@ struct TrackerLayout: View {
 
     // progress bar scaling
     private let barMaxCount: Int = 20
+    // store the hour-bin of each log so undo is correct
+   
+
+    // MARK: - Today context state
+
+    @State private var mood: MoodChoice = .ok
+    @State private var sleep: SleepChoice = .ok
+    @State private var stress: StressChoice = .medium
+
+    @State private var triggers: Set<TriggerChoice> = []
+
+    @State private var medsTaken: Bool = true
+    @State private var rescueUsed: Bool = false
+    @State private var injury: Bool = false
+
+   
+    @State private var note: String = ""
 
     var body: some View {
         ZStack {
@@ -43,7 +61,22 @@ struct TrackerLayout: View {
                     header
 
                     GlassCard { distributionCard }
-                    GlassCard { todayCard }
+                    GlassCard {
+                        TodayCard(
+                                todayCount: $todayCount,
+                                mood: $mood,
+                                sleep: $sleep,
+                                stress: $stress,
+                                triggers: $triggers,
+                                medsTaken: $medsTaken,
+                                rescueUsed: $rescueUsed,
+                                injury: $injury,
+                                note: $note,
+                                onUndoLast: onUndo,
+                                onAddSeizure: onLog
+                            )
+                    }
+
                     
                 }
                 .padding(.horizontal, 18)
