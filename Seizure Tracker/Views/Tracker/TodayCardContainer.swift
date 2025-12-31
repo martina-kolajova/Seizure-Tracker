@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+
+
 struct TodayCardContainer: View {
     @Binding var todayCount: Int
     @Binding var showDetails: Bool
@@ -33,36 +35,33 @@ struct TodayCardContainer: View {
                     showDetails.toggle()
                 }
             } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: 2) {
                         Text("Today at a glance")
                             .font(.headline)
-                            .foregroundColor(.white.opacity(0.95))
+                            .foregroundColor(.white.opacity(0.92))
 
-                        HStack(alignment: .firstTextBaseline, spacing: 10) {
-                            Text("\(todayCount)")
-                                .font(.system(size: 44, weight: .bold))
-                                .foregroundColor(.white.opacity(0.95))
-                            Text("seizures")
-                                .foregroundColor(.white.opacity(0.75))
-                        }
+                        Text("\(todayCount) seizures")
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.70))
                     }
 
                     Spacer()
 
-                    // Quick icons
+                    // keep just 1–2 indicators here (optional)
                     HStack(spacing: 10) {
-                        quickIcon(moodIcon)
-                        quickIcon(sleepIcon)
-                        quickIcon(stressIcon)
-                        quickIcon(medsTaken ? "pills.fill" : "pills")
-                    }
+                        Image(systemName: medsTaken ? "pills.fill" : "pills")
+                            .foregroundColor(.white.opacity(0.75))
 
-                    Image(systemName: "chevron.down")
-                        .rotationEffect(.degrees(showDetails ? 180 : 0))
-                        .foregroundColor(.white.opacity(0.7))
-                        .padding(.leading, 6)
+                        Image(systemName: sleep == .good ? "bed.double.fill" : "bed.double")
+                            .foregroundColor(.white.opacity(0.75))
+
+                        Image(systemName: showDetails ? "chevron.up" : "chevron.down")
+                            .foregroundColor(.white.opacity(0.65))
+                            .font(.system(size: 12, weight: .semibold))
+                    }
                 }
+                .contentShape(Rectangle())   // makes the whole row tappable
             }
             .buttonStyle(.plain)
 
@@ -88,7 +87,7 @@ struct TodayCardContainer: View {
         }
     }
 
-    // MARK: - Quick icons
+    // MARK: - Quick icons (optional helpers)
 
     private func quickIcon(_ name: String) -> some View {
         Image(systemName: name)

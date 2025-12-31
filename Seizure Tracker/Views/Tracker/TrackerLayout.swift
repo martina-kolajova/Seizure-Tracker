@@ -7,32 +7,29 @@
 import SwiftUI
 
 struct TrackerLayout: View {
+
+    // MARK: - Top tab bar
+    private enum TopTab: String {
+        case tracker = "Tracker"
+        case daily   = "Daily Status"
+    }
+
+    @State private var selectedTab: TopTab = .tracker
+
+    // MARK: - Inputs
     let patientName: String
     let onBack: () -> Void
 
     @Binding var todayCount: Int
     @Binding var totalCount: Int
     @Binding var activeTab: TrackerView.ProfileTab?
- 
-    
 
     let hourlyCounts: [Int]
-    
+
     let onLog: () -> Void
     let onUndo: () -> Void
-    
-     // drives brightness/saturation
+
     let violetPhase: Double
-
-
-    // live time
-    @State private var now = Date()
-    private let clock = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
-    // progress bar scaling
-    private let barMaxCount: Int = 20
-    // store the hour-bin of each log so undo is correct
-   
 
     // MARK: - Today context state
     @State private var showTodayDetails = false
@@ -47,13 +44,10 @@ struct TrackerLayout: View {
     @State private var rescueUsed: Bool = false
     @State private var injury: Bool = false
 
-   
     @State private var note: String = ""
-    
 
     var body: some View {
         ZStack {
-            // background stays constant
             MeshGradientView()
                 .ignoresSafeArea()
                 .overlay(Color.black.opacity(0.35).ignoresSafeArea())
@@ -61,26 +55,37 @@ struct TrackerLayout: View {
             ScrollView {
                 VStack(spacing: 22) {
                     header
+                    topTabBar
 
-                    GlassCard { distributionCard }
-                    GlassCard {
-                        TodayCardContainer(
-                            todayCount:$todayCount,
-                                showDetails: $showTodayDetails,  
-                                mood: $mood,
-                                sleep: $sleep,
-                                stress: $stress,
-                                triggers: $triggers,
-                                medsTaken: $medsTaken,
-                                rescueUsed: $rescueUsed,
-                                injury: $injury,
-                                note: $note,
-                                onUndoLast: onUndo,
-                                onAddSeizure: onLog
-                            )
+                    // ✅ NO scrolling to anchors — we just switch what is shown
+                    Group {
+                        if selectedTab == .tracker {
+                            GlassCard { distributionCard }
+                                .transition(.opacity.combined(with: .move(edge: .leading)))
+                        } else {
+                            GlassCard {
+                                TodayCardContainer(
+                                    todayCount: $todayCount,
+                                    showDetails: $showTodayDetails,
+                                    mood: $mood,
+                                    sleep: $sleep,
+                                    stress: $stress,
+                                    triggers: $triggers,
+                                    medsTaken: $medsTaken,
+                                    rescueUsed: $rescueUsed,
+                                    injury: $injury,
+                                    note: $note,
+                                    onUndoLast: onUndo,
+                                    onAddSeizure: onLog
+                                )
+                             
+                            }
+
+                            .transition(.opacity.combined(with: .move(edge: .trailing)))
+                        }
                     }
+                    .animation(.spring(response: 0.45, dampingFraction: 0.9), value: selectedTab)
 
-                    
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 16)
@@ -88,13 +93,20 @@ struct TrackerLayout: View {
             }
         }
         .navigationBarHidden(true)
-        .onReceive(clock) { now = $0 }
         .safeAreaInset(edge: .bottom) {
-            BigLogBar(onTap: onLog)
-
-                .padding(.horizontal, 14)
-                .padding(.bottom, 10)
+            if selectedTab == .tracker {
+                BigLogBar(onTap: onLog)
+                    .padding(.horizontal, 14)
+                    .padding(.bottom, 10)
+            } else {
+                // ✅ reserve space above the home indicator + rounded corners
+                Color.clear
+                    .frame(height: 60)   // try 44–60 depending on how much gap you want
+            }
         }
+
+        .animation(.spring(response: 0.4, dampingFraction: 0.9), value: selectedTab)
+
     }
 
     // MARK: - Header
@@ -112,45 +124,70 @@ struct TrackerLayout: View {
 
             Spacer()
 
-            VStack(spacing: 4) {
-                Text(patientName.isEmpty ? "Tracker" : patientName)
-                    .foregroundColor(.white.opacity(0.95))
-                    .font(.headline)
-
-                Text(now.formatted(date: .abbreviated, time: .shortened))
-                    .foregroundColor(.white.opacity(0.70))
-                    .font(.caption)
-            }
+            Text(patientName.isEmpty ? "Martina" : patientName)
+                .foregroundColor(.white.opacity(0.95))
+                .font(.headline)
 
             Spacer()
+
+            // keeps title centered
             Color.clear.frame(width: 44, height: 44)
         }
     }
 
-    // MARK: - Today card (count + vertical bar)
+    // MARK: - Top tab bar
+    private var topTabBar: some View {
+        HStack(spacing: 8) {
+            segTab(.tracker)
+            segTab(.daily)
+        }
+        .padding(8)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.white.opacity(0.14), lineWidth: 1)
+        )
+    }
 
-   
+    private func segTab(_ tab: TopTab) -> some View {
+        let isOn = (selectedTab == tab)
+
+        return Button {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.92)) {
+                selectedTab = tab
+            }
+        } label: {
+            Text(tab.rawValue)
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.white.opacity(isOn ? 0.98 : 0.70))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(isOn ? Color.white.opacity(0.18) : Color.white.opacity(0.06))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.white.opacity(isOn ? 0.22 : 0.10), lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+    }
 
     // MARK: - Distribution card (donut ring)
 
     private var distributionCard: some View {
         let maxPerHour = max(1, hourlyCounts.max() ?? 1)
-    
 
         let p = max(0, min(1, violetPhase))
 
-        let hue: Double = 0.78                 // violet
-        let saturation = 0.35 + 0.50 * p       // starts low (pastel), gets richer
-        let brightness = 0.98 - 0.45 * p       // starts very bright, gets darker
+        let hue: Double = 0.78
+        let saturation = 0.35 + 0.50 * p
+        let brightness = 0.98 - 0.45 * p
 
         let barColor = Color(hue: hue, saturation: saturation, brightness: brightness)
 
-
         return VStack(alignment: .leading, spacing: 12) {
-            Text("Today distribution")
-                .font(.headline)
-                .foregroundColor(.white.opacity(0.92))
-
             HStack(spacing: 16) {
                 DonutRadialBarRingWithClockLabels(
                     values: hourlyCounts,
@@ -158,11 +195,12 @@ struct TrackerLayout: View {
                     barColor: barColor
                 )
                 .frame(width: 220, height: 220)
-
             }
         }
     }
 }
+
+
 
 // MARK: - Big bottom Log button
 
@@ -175,8 +213,8 @@ struct BigLogBar: View {
                 .resizable()
                 .scaledToFit()
                 .padding(1)
-                .frame(width: 204, height: 204) // ✅ square
-                .foregroundColor(.white)       // (safe even for asset; no harm)
+                .frame(width: 204, height: 204)
+                .foregroundColor(.white)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -188,7 +226,6 @@ struct BigLogBar: View {
         .accessibilityLabel("Log")
     }
 }
-
 
 // MARK: - Vertical progress bar
 
@@ -233,15 +270,15 @@ struct DonutRadialBarRing: View {
         GeometryReader { geo in
             let size = min(geo.size.width, geo.size.height)
             let center = CGPoint(x: geo.size.width / 2, y: geo.size.height / 2)
-            
+
             let n = max(values.count, 1)
             let step = (2.0 * Double.pi) / Double(n)
-            let gap = CGFloat(step) * gapRatio
-            
+            let _ = CGFloat(step) * gapRatio
+
             let ringW = max(10, size * ringWidthRatio)
             let outerR = (size / 2) - 2
             let innerR = max(0, outerR - ringW)
-            
+
             Canvas { context, _ in
                 // base ring
                 var base = Path()
@@ -257,7 +294,7 @@ struct DonutRadialBarRing: View {
                     with: .color(.white.opacity(baseRingOpacity)),
                     style: StrokeStyle(lineWidth: ringW, lineCap: .butt)
                 )
-                
+
                 for i in 0..<n {
                     let v = i < values.count ? values[i] : 0
                     let t = CGFloat(v) / CGFloat(max(1, maxValue))
@@ -265,7 +302,7 @@ struct DonutRadialBarRing: View {
 
                     // center the bar on the hour tick
                     let centerAngle = CGFloat(Double(i) * step) - .pi / 2
-                    let barWidth = CGFloat(step) * 0.78     // angular width
+                    let barWidth = CGFloat(step) * 0.78
                     let a0 = centerAngle - barWidth / 2
                     let a1 = centerAngle + barWidth / 2
 
@@ -273,20 +310,14 @@ struct DonutRadialBarRing: View {
                     let r0 = innerR
                     let r1 = innerR + (outerR - innerR) * t
 
-                    // rounded corners size
-                    let corner = max(2, (outerR - innerR) * 0.18)
-
-                    // Build a “ring segment” (annular sector) from r0..r1, then round its corners by stroking+filling
+                    // segment
                     var seg = Path()
-
-                    // outer arc (at r1)
                     seg.addArc(center: center,
                                radius: r1,
                                startAngle: Angle(radians: Double(a0)),
                                endAngle: Angle(radians: Double(a1)),
                                clockwise: false)
 
-                    // inner arc (at r0) back
                     seg.addArc(center: center,
                                radius: r0,
                                startAngle: Angle(radians: Double(a1)),
@@ -295,21 +326,13 @@ struct DonutRadialBarRing: View {
 
                     seg.closeSubpath()
 
-                    // ✅ Fill
                     context.fill(seg, with: .color(barColor.opacity(barFillOpacity)))
-
-                    // ✅ Outline (greyish)
                     context.stroke(seg, with: .color(.white.opacity(outlineOpacity)), lineWidth: 1)
-                
-
                 }
             }
         }
     }
 }
-
-
-
 
 struct DonutRadialBarRingWithClockLabels: View {
     let values: [Int]
@@ -355,7 +378,6 @@ struct ClockRingLabels: View {
         )
     }
 }
-
 
 #Preview {
     TrackerView(patientName: "Martina", onBack: {})
