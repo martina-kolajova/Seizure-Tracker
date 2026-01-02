@@ -7,56 +7,56 @@
 import SwiftUI
 
 struct TrackerLayout: View {
-
+    
     // MARK: - Top tab bar
     private enum TopTab: String {
         case tracker = "Tracker"
         case daily   = "Daily Status"
     }
-
+    
     @State private var selectedTab: TopTab = .tracker
-
+    
     // MARK: - Inputs
     let patientName: String
     let onBack: () -> Void
-
+    
     @Binding var todayCount: Int
     @Binding var totalCount: Int
     @Binding var activeTab: TrackerView.ProfileTab?
-
+    
     let hourlyCounts: [Int]
-
+    
     let onLog: () -> Void
     let onUndo: () -> Void
-
+    
     let violetPhase: Double
-
+    
     // MARK: - Today context state
     @State private var showTodayDetails = false
-
+    
     @State private var mood: MoodChoice = .ok
     @State private var sleep: SleepChoice = .ok
     @State private var stress: StressChoice = .medium
-
+    
     @State private var triggers: Set<TriggerChoice> = []
-
+    
     @State private var medsTaken: Bool = true
     @State private var rescueUsed: Bool = false
     @State private var injury: Bool = false
-
+    
     @State private var note: String = ""
-
+    
     var body: some View {
         ZStack {
             MeshGradientView()
                 .ignoresSafeArea()
                 .overlay(Color.black.opacity(0.35).ignoresSafeArea())
-
+            
             ScrollView {
                 VStack(spacing: 22) {
                     header
                     topTabBar
-
+                    
                     // ✅ NO scrolling to anchors — we just switch what is shown
                     Group {
                         if selectedTab == .tracker {
@@ -78,14 +78,14 @@ struct TrackerLayout: View {
                                     onUndoLast: onUndo,
                                     onAddSeizure: onLog
                                 )
-                             
+                                
                             }
-
+                            
                             .transition(.opacity.combined(with: .move(edge: .trailing)))
                         }
                     }
                     .animation(.spring(response: 0.45, dampingFraction: 0.9), value: selectedTab)
-
+                    
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 16)
@@ -95,22 +95,30 @@ struct TrackerLayout: View {
         .navigationBarHidden(true)
         .safeAreaInset(edge: .bottom) {
             if selectedTab == .tracker {
-                BigLogBar(onTap: onLog)
-                    .padding(.horizontal, 14)
-                    .padding(.bottom, 10)
+                
+                VStack(spacing: 6) {
+                    Text("Tap to log a seizure")
+                        .font(.caption)
+                        .font(.headline.weight(.semibold))
+                        .foregroundColor(.white.opacity(0.80))
+                    
+                    BigLogBar(onTap: onLog)
+                }
+                .padding(.horizontal, 14)
+                .padding(.bottom, 10)
             } else {
                 // ✅ reserve space above the home indicator + rounded corners
                 Color.clear
                     .frame(height: 60)   // try 44–60 depending on how much gap you want
             }
         }
-
+        
         .animation(.spring(response: 0.4, dampingFraction: 0.9), value: selectedTab)
-
+        
     }
-
+    
     // MARK: - Header
-
+    
     private var header: some View {
         HStack {
             Button(action: onBack) {
@@ -121,20 +129,20 @@ struct TrackerLayout: View {
                     .overlay(Circle().stroke(Color.white.opacity(0.25), lineWidth: 1))
             }
             .buttonStyle(.plain)
-
+            
             Spacer()
-
+            
             Text(patientName.isEmpty ? "Martina" : patientName)
                 .foregroundColor(.white.opacity(0.95))
                 .font(.headline)
-
+            
             Spacer()
-
+            
             // keeps title centered
             Color.clear.frame(width: 44, height: 44)
         }
     }
-
+    
     // MARK: - Top tab bar
     private var topTabBar: some View {
         HStack(spacing: 8) {
@@ -148,10 +156,10 @@ struct TrackerLayout: View {
                 .stroke(Color.white.opacity(0.14), lineWidth: 1)
         )
     }
-
+    
     private func segTab(_ tab: TopTab) -> some View {
         let isOn = (selectedTab == tab)
-
+        
         return Button {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.92)) {
                 selectedTab = tab
@@ -173,28 +181,45 @@ struct TrackerLayout: View {
         }
         .buttonStyle(.plain)
     }
-
+    
     // MARK: - Distribution card (donut ring)
-
+    
     private var distributionCard: some View {
         let maxPerHour = max(1, hourlyCounts.max() ?? 1)
-
+        
         let p = max(0, min(1, violetPhase))
-
+        
         let hue: Double = 0.78
         let saturation = 0.35 + 0.50 * p
         let brightness = 0.98 - 0.45 * p
-
+        
         let barColor = Color(hue: hue, saturation: saturation, brightness: brightness)
-
+        
         return VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 16) {
-                DonutRadialBarRingWithClockLabels(
-                    values: hourlyCounts,
-                    maxValue: maxPerHour,
-                    barColor: barColor
-                )
-                .frame(width: 220, height: 220)
+            
+            // ✅ Title
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Daily seizure distribution")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white.opacity(0.9))
+                
+                Text("By hour")
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.65))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            // Chart
+            HStack {
+                   Spacer()
+
+                   DonutRadialBarRingWithClockLabels(
+                       values: hourlyCounts,
+                       maxValue: maxPerHour,
+                       barColor: barColor
+                   )
+                   .frame(width: 220, height: 220)
+
+                   Spacer()
             }
         }
     }
@@ -224,6 +249,7 @@ struct BigLogBar: View {
         .buttonStyle(.plain)
         .shadow(radius: 12, y: 6)
         .accessibilityLabel("Log")
+       
     }
 }
 

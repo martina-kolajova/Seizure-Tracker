@@ -77,8 +77,12 @@ struct PatientInfoMenuView: View {
     private var topBar: some View {
         HStack {
             Button(action: onBack) {
-                Label("Back", systemImage: "chevron.left")
-                    .foregroundColor(.white)
+                Image(systemName: "chevron.left")
+                               .font(.system(size: 17, weight: .semibold))
+                               .foregroundColor(.white)
+                               .padding(10)
+                               .background(.white.opacity(0.15), in: Circle())
+                       
             }
             Spacer()
             Text("Set up patient profile")
