@@ -8,27 +8,26 @@ import FuturedArchitecture
 import SwiftUI
 
 struct ContentView: View {
-    enum Screen {
-        case welcome
-        case patientInfo
-        case tracker
-    }
-
-    enum NavDirection {
-        case forward
-        case backward
-    }
+    enum Screen { case welcome, patientInfo, tracker }
+    enum NavDirection { case forward, backward }
 
     @State private var screen: Screen = .welcome
     @State private var navDirection: NavDirection = .forward
-    @State private var patientName: String = ""
+
+    // ✅ one shared store for the whole app
+    @StateObject private var store = EpiLogStore()
+
+    private var patientDisplayName: String {
+        let first = store.patient.firstName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let last  = store.patient.lastName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let full  = "\(first) \(last)".trimmingCharacters(in: .whitespacesAndNewlines)
+        return full.isEmpty ? "Patient" : full
+    }
 
     var body: some View {
         ZStack {
-            // 🔹 One shared background for all screens 
             MeshGradientView()
 
-            // 🔹 Foreground content that slides over the same background
             ZStack {
                 switch screen {
                 case .welcome:
@@ -42,17 +41,17 @@ struct ContentView: View {
 
                 case .patientInfo:
                     PatientDelegate(
-                        patientName: $patientName,
-                        onContinue: {
-                            navDirection = .forward
-                            withAnimation(.easeInOut(duration: 0.5)) {
-                                screen = .tracker
-                            }
-                        },
+                        store: store,
                         onBack: {
                             navDirection = .backward
                             withAnimation(.easeInOut(duration: 0.5)) {
                                 screen = .welcome
+                            }
+                        },
+                        onContinue: {
+                            navDirection = .forward
+                            withAnimation(.easeInOut(duration: 0.5)) {
+                                screen = .tracker
                             }
                         }
                     )
@@ -60,21 +59,20 @@ struct ContentView: View {
 
                 case .tracker:
                     TrackerView(
-                        patientName: patientName,
+                        patientName: patientDisplayName,
                         onBack: {
                             navDirection = .backward
                             withAnimation(.easeInOut(duration: 0.5)) {
                                 screen = .patientInfo
                             }
-                        }
+                        },
+                        store: store
                     )
                     .transition(currentTransition)
                 }
             }
         }
     }
-
-    // MARK: - Slide direction, but background stays fixed
 
     private var currentTransition: AnyTransition {
         let insertionMove: AnyTransition = (navDirection == .forward)
@@ -92,7 +90,100 @@ struct ContentView: View {
     }
 }
 
-
 #Preview {
     ContentView()
 }
+
+
+
+
+//struct ContentView: View {
+//    enum Screen {
+//        case welcome
+//        case patientInfo
+//        case tracker
+//    }
+//
+//    enum NavDirection {
+//        case forward
+//        case backward
+//    }
+//
+//    @State private var screen: Screen = .welcome
+//    @State private var navDirection: NavDirection = .forward
+//    @State private var patientName: String = ""
+//
+//    var body: some View {
+//        ZStack {
+//            // 🔹 One shared background for all screens 
+//            MeshGradientView()
+//
+//            // 🔹 Foreground content that slides over the same background
+//            ZStack {
+//                switch screen {
+//                case .welcome:
+//                    WelcomeView(onStart: {
+//                        navDirection = .forward
+//                        withAnimation(.easeInOut(duration: 0.5)) {
+//                            screen = .patientInfo
+//                        }
+//                    })
+//                    .transition(currentTransition)
+//
+//                case .patientInfo:
+//                    PatientDelegate(
+//                        patientName: $patientName,
+//                        onContinue: {
+//                            navDirection = .forward
+//                            withAnimation(.easeInOut(duration: 0.5)) {
+//                                screen = .tracker
+//                            }
+//                        },
+//                        onBack: {
+//                            navDirection = .backward
+//                            withAnimation(.easeInOut(duration: 0.5)) {
+//                                screen = .welcome
+//                            }
+//                        }
+//                    )
+//                    .transition(currentTransition)
+//
+//                case .tracker:
+//                    TrackerView(
+//                        patientName: patientName,
+//                        onBack: {
+//                            navDirection = .backward
+//                            withAnimation(.easeInOut(duration: 0.5)) {
+//                                screen = .patientInfo
+//                            }
+//                        }
+//                    )
+//                    .transition(currentTransition)
+//                }
+//            }
+//        }
+//    }
+//
+//    // MARK: - Slide direction, but background stays fixed
+//
+//    private var currentTransition: AnyTransition {
+//        let insertionMove: AnyTransition = (navDirection == .forward)
+//            ? .move(edge: .trailing)
+//            : .move(edge: .leading)
+//
+//        let removalMove: AnyTransition = (navDirection == .forward)
+//            ? .move(edge: .leading)
+//            : .move(edge: .trailing)
+//
+//        return .asymmetric(
+//            insertion: insertionMove.combined(with: .opacity),
+//            removal: removalMove.combined(with: .opacity)
+//        )
+//    }
+//}
+//
+//
+//#Preview {
+//    ContentView()
+//}
+//

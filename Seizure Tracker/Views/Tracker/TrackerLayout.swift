@@ -6,58 +6,202 @@
 //
 import SwiftUI
 
+//struct TrackerLayout: View {
+//    
+//    // MARK: - Top tab bar
+//    private enum TopTab: String {
+//        case tracker = "Tracker"
+//        case daily   = "Daily Status"
+//    }
+//    
+//    @State private var selectedTab: TopTab = .tracker
+//    
+//  
+//    @ObservedObject var store: EpiLogStore
+//    // MARK: - Inputs
+//    let patientName: String
+//    let onBack: () -> Void
+//    
+//    @Binding var todayCount: Int
+//    @Binding var totalCount: Int
+//    @Binding var activeTab: TrackerView.ProfileTab?
+//    
+//    let hourlyCounts: [Int]
+//    
+//    let onLog: () -> Void
+//    let onUndo: () -> Void
+//    
+//    let violetPhase: Double
+//    
+//    // MARK: - Today context state
+//    @State private var showTodayDetails = false
+//    
+//    @State private var mood: MoodChoice = .ok
+//    @State private var sleep: SleepChoice = .ok
+//    @State private var stress: StressChoice = .medium
+//    
+//    @State private var triggers: Set<TriggerChoice> = []
+//    
+//    @State private var medsTaken: Bool = false
+//    @State private var rescueUsed: Bool = false
+//    @State private var injury: Bool = false
+//    
+//    @State private var note: String = ""
+//    
+//    var body: some View {
+//        ZStack {
+//            MeshGradientView()
+//                .ignoresSafeArea()
+//                .overlay(Color.black.opacity(0.0).ignoresSafeArea())
+//            
+//            ScrollView {
+//                VStack(spacing: 22) {
+//                    header
+//                    topTabBar
+//                    
+//                    // ✅ NO scrolling to anchors — we just switch what is shown
+//                    Group {
+//                        if selectedTab == .tracker {
+//                            GlassCard { distributionCard }
+//                                .transition(.opacity.combined(with: .move(edge: .leading)))
+//                        } else {
+//                            GlassCard {
+//                                TodayCardContainer(
+//                                    todayCount: $todayCount,
+//                                    showDetails: $showTodayDetails,
+//                                    mood: $mood,
+//                                    sleep: $sleep,
+//                                    stress: $stress,
+//                                    triggers: $triggers,
+//                                    medsTaken: $medsTaken,
+//                                    rescueUsed: $rescueUsed,
+//                                    injury: $injury,
+//                                    note: $note,
+//                                    onUndoLast: onUndo,
+//                                    onAddSeizure: onLog
+//                                )
+//                                
+//                            }
+//                            
+//                            .transition(.opacity.combined(with: .move(edge: .trailing)))
+//                        }
+//                    }
+//                    .animation(.spring(response: 0.45, dampingFraction: 0.9), value: selectedTab)
+//                    
+//                }
+//                .padding(.horizontal, 18)
+//                .padding(.top, 16)
+//                .padding(.bottom, 120)
+//            }
+//        }
+//        .navigationBarHidden(true)
+//        .safeAreaInset(edge: .bottom) {
+//            if selectedTab == .tracker {
+//                
+//                VStack(spacing: 6) {
+//                    Text("Tap to log a seizure")
+//                        .font(.caption)
+//                        .font(.headline.weight(.semibold))
+//                        .foregroundColor(.white.opacity(0.80))
+//                    
+//                    BigLogBar(onTap: onLog)
+//                }
+//                .padding(.horizontal, 14)
+//                .padding(.bottom, 10)
+//            } else {
+//                // ✅ reserve space above the home indicator + rounded corners
+//                Color.clear
+//                    .frame(height: 60)   // try 44–60 depending on how much gap you want
+//            }
+//        }
+//        
+//        .animation(.spring(response: 0.4, dampingFraction: 0.9), value: selectedTab)
+//        
+//    }
+//    
+//    // MARK: - Header
+//    
+//    private var header: some View {
+//        HStack {
+//            Button(action: onBack) {
+//                Image(systemName: "chevron.left")
+//                    .foregroundColor(.white)
+//                    .padding(10)
+//                    .background(.ultraThinMaterial, in: Circle())
+//                    .overlay(Circle().stroke(Color.white.opacity(0.25), lineWidth: 1))
+//            }
+//            .buttonStyle(.plain)
+//            
+//            Spacer()
+//            
+//            Text(patientName.isEmpty ? "Martina" : patientName)
+//                .foregroundColor(.white.opacity(0.95))
+//                .font(.headline)
+//            
+//            Spacer()
+//            
+//            // keeps title centered
+//            Color.clear.frame(width: 44, height: 44)
+//        }
+//    }
+//    
+
+import SwiftUI
+
 struct TrackerLayout: View {
-    
+
     // MARK: - Top tab bar
     private enum TopTab: String {
         case tracker = "Tracker"
         case daily   = "Daily Status"
     }
-    
+
     @State private var selectedTab: TopTab = .tracker
-    
+
+    // ✅ already here
+    @ObservedObject var store: EpiLogStore
+
     // MARK: - Inputs
     let patientName: String
     let onBack: () -> Void
-    
+
     @Binding var todayCount: Int
     @Binding var totalCount: Int
     @Binding var activeTab: TrackerView.ProfileTab?
-    
+
     let hourlyCounts: [Int]
-    
+
     let onLog: () -> Void
     let onUndo: () -> Void
-    
+
     let violetPhase: Double
-    
+
     // MARK: - Today context state
     @State private var showTodayDetails = false
-    
+
     @State private var mood: MoodChoice = .ok
     @State private var sleep: SleepChoice = .ok
     @State private var stress: StressChoice = .medium
-    
+
     @State private var triggers: Set<TriggerChoice> = []
-    
-    @State private var medsTaken: Bool = true
+
+    @State private var medsTaken: Bool = false
     @State private var rescueUsed: Bool = false
     @State private var injury: Bool = false
-    
+
     @State private var note: String = ""
-    
+
     var body: some View {
         ZStack {
             MeshGradientView()
                 .ignoresSafeArea()
-                .overlay(Color.black.opacity(0.35).ignoresSafeArea())
-            
+                .overlay(Color.black.opacity(0.0).ignoresSafeArea())
+
             ScrollView {
                 VStack(spacing: 22) {
                     header
                     topTabBar
-                    
-                    // ✅ NO scrolling to anchors — we just switch what is shown
+
                     Group {
                         if selectedTab == .tracker {
                             GlassCard { distributionCard }
@@ -78,14 +222,11 @@ struct TrackerLayout: View {
                                     onUndoLast: onUndo,
                                     onAddSeizure: onLog
                                 )
-                                
                             }
-                            
                             .transition(.opacity.combined(with: .move(edge: .trailing)))
                         }
                     }
                     .animation(.spring(response: 0.45, dampingFraction: 0.9), value: selectedTab)
-                    
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 16)
@@ -95,30 +236,25 @@ struct TrackerLayout: View {
         .navigationBarHidden(true)
         .safeAreaInset(edge: .bottom) {
             if selectedTab == .tracker {
-                
                 VStack(spacing: 6) {
                     Text("Tap to log a seizure")
-                        .font(.caption)
-                        .font(.headline.weight(.semibold))
+                        .font(.caption.weight(.semibold))   // ✅ keep just one font
                         .foregroundColor(.white.opacity(0.80))
-                    
+
                     BigLogBar(onTap: onLog)
                 }
                 .padding(.horizontal, 14)
                 .padding(.bottom, 10)
             } else {
-                // ✅ reserve space above the home indicator + rounded corners
                 Color.clear
-                    .frame(height: 60)   // try 44–60 depending on how much gap you want
+                    .frame(height: 60)
             }
         }
-        
         .animation(.spring(response: 0.4, dampingFraction: 0.9), value: selectedTab)
-        
     }
-    
+
     // MARK: - Header
-    
+
     private var header: some View {
         HStack {
             Button(action: onBack) {
@@ -129,20 +265,20 @@ struct TrackerLayout: View {
                     .overlay(Circle().stroke(Color.white.opacity(0.25), lineWidth: 1))
             }
             .buttonStyle(.plain)
-            
+
             Spacer()
-            
-            Text(patientName.isEmpty ? "Martina" : patientName)
+
+            Text(patientName.isEmpty ? "Patient" : patientName)   // ✅ better fallback
                 .foregroundColor(.white.opacity(0.95))
                 .font(.headline)
-            
+
             Spacer()
-            
-            // keeps title centered
+
             Color.clear.frame(width: 44, height: 44)
         }
     }
-    
+
+
     // MARK: - Top tab bar
     private var topTabBar: some View {
         HStack(spacing: 8) {
@@ -406,5 +542,14 @@ struct ClockRingLabels: View {
 }
 
 #Preview {
-    TrackerView(patientName: "Martina", onBack: {})
+    let store = EpiLogStore()
+    store.patient.firstName = "Martina"
+    store.patient.lastName = "Kolajová"
+
+    return TrackerView(
+        patientName: "\(store.patient.firstName) \(store.patient.lastName)",
+        onBack: {},
+        store: store
+    )
 }
+
