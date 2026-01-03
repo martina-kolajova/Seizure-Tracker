@@ -29,9 +29,10 @@ struct TodayCard: View {
     @Binding var note: String
 
     // actions (wire later)
+    
     var onUndoLast: () -> Void = { }
     var onAddSeizure: () -> Void = { } // optional if you want a button inside the card
-
+    var onGenerateReport: () -> Void = { }
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
 
@@ -56,8 +57,21 @@ struct TodayCard: View {
 
                 // Optional: quick undo + plus (or keep only bottom log button)
                 VStack(spacing: 10) {
-                    Button(action: onUndoLast) {
-                        Label("Undo", systemImage: "arrow.uturn.left")
+                    Button {
+                        print("Undo")
+                            onUndoLast()
+                            
+                        } label: {
+                            Label("Undo", systemImage: "arrow.uturn.left")
+                                .font(.subheadline.weight(.semibold))
+                        }
+                    .buttonStyle(.bordered)
+                    .tint(.white.opacity(0.92))
+                    .foregroundColor(.purple)
+
+                    // ✅ NEW: Report
+                    Button(action: onGenerateReport) {
+                        Label("Report", systemImage: "doc.text")
                             .font(.subheadline.weight(.semibold))
                     }
                     .buttonStyle(.bordered)
@@ -74,6 +88,7 @@ struct TodayCard: View {
                     .background(.white.opacity(0.16), in: Circle())
                     .overlay(Circle().stroke(.white.opacity(0.20), lineWidth: 1))
                 }
+
             }
 
             Divider().opacity(0.25)
@@ -241,4 +256,12 @@ struct ToggleRow: View {
         }
         .tint(.white.opacity(0.85))
     }
+}
+
+#Preview {
+    TrackerView(
+        patientName: "Martina",
+        onBack: {},
+        store: EpiLogStore()
+    )
 }

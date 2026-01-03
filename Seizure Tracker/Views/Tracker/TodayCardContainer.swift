@@ -23,6 +23,7 @@ struct TodayCardContainer: View {
 
     let onUndoLast: () -> Void
     let onAddSeizure: () -> Void
+    let onGenerateReport: () -> Void
 
     var body: some View {
         VStack(spacing: 14) {
@@ -33,20 +34,33 @@ struct TodayCardContainer: View {
                     Text("Today at a glance")
                         .font(.headline)
                         .foregroundColor(.white.opacity(0.92))
-
                 }
 
                 Spacer()
 
-                // optional quick indicators (keep if you like)
+                // 🔹 Generate report button (HERE)
+                Button {
+                    print("✅ Report button tapped (TodayCardContainer)")
+                    onGenerateReport()
+                } label: {
+                    Image(systemName: "doc.text")
+                        .foregroundColor(.white)
+                        .padding(8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.white.opacity(0.18))
+                        )
+                }
+                .buttonStyle(.plain)
+
+
+                // 🔹 Existing quick indicators
                 HStack(spacing: 10) {
                     Image(systemName: medsTaken ? "pills.fill" : "pills")
                         .foregroundColor(.white.opacity(0.75))
 
                     Image(systemName: sleep == .good ? "bed.double.fill" : "bed.double")
                         .foregroundColor(.white.opacity(0.75))
-
-                    // ❌ removed chevron (no collapse anymore)
                 }
             }
 
@@ -64,7 +78,8 @@ struct TodayCardContainer: View {
                 injury: $injury,
                 note: $note,
                 onUndoLast: onUndoLast,
-                onAddSeizure: onAddSeizure
+                onAddSeizure: onAddSeizure,
+                onGenerateReport: onGenerateReport
             )
         }
         .onAppear {
@@ -73,3 +88,6 @@ struct TodayCardContainer: View {
         }
     }
 }
+
+
+

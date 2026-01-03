@@ -53,19 +53,19 @@ struct PatientDelegate: View {
     }
 }
 
-#Preview {
-    let store = EpiLogStore()
-    store.patient.firstName = "Anna"
-    store.patient.lastName = "Novak"
-    store.patient.diagnosisText = "Focal epilepsy"
-    store.patient.medicationText = "Levetiracetam"
-
-    return PatientDelegate(
-        store: store,
-        onBack: {},
-        onContinue: {}
-    )
-}
+//#Preview {
+//    let store = EpiLogStore()
+//    store.patient.firstName = "Anna"
+//    store.patient.lastName = "Novak"
+//    store.patient.diagnosisText = "Focal epilepsy"
+//    store.patient.medicationText = "Levetiracetam"
+//
+//    return PatientDelegate(
+//        store: store,
+//        onBack: {},
+//        onContinue: {}
+//    )
+//}
 
 
 
