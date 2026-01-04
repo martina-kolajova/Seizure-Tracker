@@ -38,21 +38,25 @@ struct TodayCardContainer: View {
 
                 Spacer()
 
-                // 🔹 Generate report button (HERE)
+                // Generate report button 
                 Button {
                     print("✅ Report button tapped (TodayCardContainer)")
                     onGenerateReport()
                 } label: {
-                    Image(systemName: "doc.text")
-                        .foregroundColor(.white)
-                        .padding(8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.white.opacity(0.18))
-                        )
+                    HStack(spacing: 6) {
+                        Image(systemName: "doc.text")
+                        Text("Generate report")
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.white.opacity(0.18))
+                    )
                 }
                 .buttonStyle(.plain)
-
 
                 // 🔹 Existing quick indicators
                 HStack(spacing: 10) {
@@ -79,7 +83,6 @@ struct TodayCardContainer: View {
                 note: $note,
                 onUndoLast: onUndoLast,
                 onAddSeizure: onAddSeizure,
-                onGenerateReport: onGenerateReport
             )
         }
         .onAppear {

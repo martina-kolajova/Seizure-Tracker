@@ -32,16 +32,15 @@ struct TodayCard: View {
     
     var onUndoLast: () -> Void = { }
     var onAddSeizure: () -> Void = { } // optional if you want a button inside the card
-    var onGenerateReport: () -> Void = { }
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
 
             // Header row
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Today")
-                        .font(.headline)
-                        .foregroundColor(.white.opacity(0.92))
+//                    Text("Today")
+//                        .font(.headline)
+//                        .foregroundColor(.white.opacity(0.92))
 
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
                         Text("\(todayCount)")
@@ -59,24 +58,23 @@ struct TodayCard: View {
                 VStack(spacing: 10) {
                     Button {
                         print("Undo")
-                            onUndoLast()
-                            
-                        } label: {
-                            Label("Undo", systemImage: "arrow.uturn.left")
-                                .font(.subheadline.weight(.semibold))
-                        }
-                    .buttonStyle(.bordered)
-                    .tint(.white.opacity(0.92))
-                    .foregroundColor(.purple)
-
-                    // ✅ NEW: Report
-                    Button(action: onGenerateReport) {
-                        Label("Report", systemImage: "doc.text")
-                            .font(.subheadline.weight(.semibold))
+                        onUndoLast()
+                    } label: {
+                        Image(systemName: "minus")
+                            .font(.system(size: 16, weight: .bold))
+                            .frame(width: 36, height: 36)
+                            .foregroundColor(.white)
+                            .background(
+                                Circle()
+                                    .fill(Color.white.opacity(0.18))
+                            )
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                            )
                     }
-                    .buttonStyle(.bordered)
-                    .tint(.white.opacity(0.92))
-                    .foregroundColor(.purple)
+                    .buttonStyle(.plain)
+                
 
                     Button(action: onAddSeizure) {
                         Image(systemName: "plus")

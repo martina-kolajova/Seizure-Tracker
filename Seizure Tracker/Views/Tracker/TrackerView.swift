@@ -27,12 +27,30 @@ struct TrackerView: View {
     
     private func generateReport() {
         let p = store.patient
-        print("📄 REPORT")
-        print("Name:", p.firstName, p.lastName)
-        print("Diagnosis:", p.diagnosisText)
-        print("Medication:", p.medicationText)
-        print("Today count:", todayCount, "Total:", totalCount)
+
+        let df = DateFormatter()
+        df.dateStyle = .medium
+        df.timeStyle = .short
+
+        print("📄 SEIZURE REPORT")
+        print("Patient: \(p.firstName) \(p.lastName)")
+        print("Diagnosis: \(p.diagnosisText.isEmpty ? "—" : p.diagnosisText)")
+        print("Medication: \(p.medicationText.isEmpty ? "—" : p.medicationText)")
+        print("")
+
+        print("Total seizures: \(store.seizures.count)")
+        if store.seizures.isEmpty {
+            print("No seizures logged.")
+            return
+        }
+
+        print("Seizure timestamps:")
+        for (i, ev) in store.seizures.enumerated() {
+            print("\(i + 1). \(df.string(from: ev.date))")
+        }
     }
+
+
 
 
     var body: some View {
@@ -57,8 +75,9 @@ struct TrackerView: View {
     }
 
     private func logNow() {
-        let hour12 = Calendar.current.component(.hour, from: Date()) % 12
+        store.addSeizure()   // ✅ STORE DATE
 
+        let hour12 = Calendar.current.component(.hour, from: Date()) % 12
         todayCount += 1
         totalCount += 1
         hourlyCounts[hour12] += 1
@@ -70,10 +89,11 @@ struct TrackerView: View {
     }
 
     private func undoLastSimple() {
-        guard let lastBin = loggedBins.popLast() else { return }
+        store.undoLastSeizure()   // ✅ REMOVE DATE
 
-        if todayCount > 0 { todayCount -= 1 }
-        if totalCount > 0 { totalCount -= 1 }
+        guard let lastBin = loggedBins.popLast() else { return }
+        todayCount = max(0, todayCount - 1)
+        totalCount = max(0, totalCount - 1)
 
         if (0..<hourlyCounts.count).contains(lastBin) {
             hourlyCounts[lastBin] = max(0, hourlyCounts[lastBin] - 1)
@@ -83,6 +103,7 @@ struct TrackerView: View {
             violetPhase = max(0, violetPhase - 0.04)
         }
     }
+
 
     @ViewBuilder
     private func profileSheet(_ tab: ProfileTab) -> some View {
