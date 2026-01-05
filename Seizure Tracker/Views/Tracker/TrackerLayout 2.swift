@@ -27,12 +27,12 @@ struct TrackerLayout: View {
     @Binding var totalCount: Int
     @Binding var activeTab: TrackerView.ProfileTab?
 
-    let hourlyCounts: [Int]
+//    let hourlyCounts: [Int]
 
-    let onLog: () -> Void
-    let onUndo: () -> Void
 
-    let violetPhase: Double
+
+    @Binding var violetPhase: Double
+
 
     // MARK: - Today context state
     @State var selectedDate: Date = Date()
@@ -48,6 +48,28 @@ struct TrackerLayout: View {
     @State private var injury: Bool = false
 
     @State private var note: String = ""
+    
+    private func syncCounts() {
+        todayCount = store.count(for: selectedDate)
+        totalCount = store.totalCount()
+    }
+
+    private func logSeizureForSelectedDay() {
+        store.addSeizure(onDay: selectedDate)
+        withAnimation(.easeInOut(duration: 0.8)) {
+            violetPhase = min(violetPhase + 0.08, 1.0)
+        }
+        syncCounts()
+    }
+
+    private func undoSeizureForSelectedDay() {
+        _ = store.undoLastSeizure(onDay: selectedDate)
+        withAnimation(.easeInOut(duration: 0.5)) {
+            violetPhase = max(violetPhase - 0.06, 0.0)
+        }
+        syncCounts()
+    }
+
 
     var body: some View {
         ZStack {
@@ -78,8 +100,9 @@ struct TrackerLayout: View {
                                     rescueUsed: $rescueUsed,
                                     injury: $injury,
                                     note: $note,
-                                    onUndoLast: onUndo,
-                                    onAddSeizure: onLog,
+                                    onUndoLast: undoSeizureForSelectedDay,
+                                    onAddSeizure: logSeizureForSelectedDay,
+
                                     onGenerateReport: onGenerateReport
                                 )
                             }
@@ -101,7 +124,8 @@ struct TrackerLayout: View {
                         .font(.caption.weight(.semibold))
                         .foregroundColor(.white.opacity(0.80))
 
-                    BigLogBar(onTap: onLog)
+                    BigLogBar(onTap: logSeizureForSelectedDay)
+
                 }
                 .padding(.horizontal, 14)
                 .padding(.bottom, 10)
@@ -110,6 +134,10 @@ struct TrackerLayout: View {
             }
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.9), value: selectedTab)
+        .onAppear { syncCounts() }
+        .onChange(of: selectedDate) { _ in syncCounts() }
+        .onChange(of: store.seizures.count) { _ in syncCounts() }
+
     }
 }
 

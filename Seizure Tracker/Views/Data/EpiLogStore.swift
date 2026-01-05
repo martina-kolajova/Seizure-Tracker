@@ -10,6 +10,10 @@ import Foundation
 import Combine
 
 
+
+import Foundation
+import Combine
+
 @MainActor
 final class EpiLogStore: ObservableObject {
 
@@ -31,16 +35,75 @@ final class EpiLogStore: ObservableObject {
     init() {
         loadPatient()
         loadSeizures()
+        seizures.sort { $0.date < $1.date }
     }
 
-    // MARK: - Seizure actions
+    // MARK: - Day helper
+    func dayKey(_ date: Date) -> Date {
+        Calendar.current.startOfDay(for: date)
+    }
 
+    // MARK: - Seizure actions (existing)
     func addSeizure() {
         seizures.append(SeizureEvent())
+        seizures.sort { $0.date < $1.date }
     }
 
     func undoLastSeizure() {
         _ = seizures.popLast()
+    }
+
+    func hourlyBins12(for day: Date) -> [Int] {
+        var bins = Array(repeating: 0, count: 12)
+        let cal = Calendar.current
+        let key = cal.startOfDay(for: day)
+
+        for e in seizures {
+            if cal.startOfDay(for: e.date) == key {
+                let hour24 = cal.component(.hour, from: e.date) // 0...23
+                let h = hour24 % 12                              // 0...11
+                bins[h] += 1
+            }
+        }
+        return bins
+    }
+
+
+    // MARK: - Seizure actions (NEW: per selected day)
+
+    /// Adds a seizure to the given day, using the current time-of-day.
+    func addSeizure(onDay day: Date) {
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: day)
+
+        // keep current time-of-day (hour/min/sec)
+        let now = Date()
+        let time = cal.dateComponents([.hour, .minute, .second], from: now)
+
+        let ts = cal.date(byAdding: time, to: start) ?? start
+        seizures.append(SeizureEvent(date: ts))
+        seizures.sort { $0.date < $1.date }
+    }
+
+    /// Removes the most recent seizure from the given day (if any).
+    @discardableResult
+    func undoLastSeizure(onDay day: Date) -> SeizureEvent? {
+        let key = dayKey(day)
+        guard let idx = seizures.lastIndex(where: { dayKey($0.date) == key }) else {
+            return nil
+        }
+        return seizures.remove(at: idx)
+    }
+
+    // MARK: - Counts (useful for UI)
+
+    func count(for day: Date) -> Int {
+        let key = dayKey(day)
+        return seizures.reduce(0) { $0 + (dayKey($1.date) == key ? 1 : 0) }
+    }
+
+    func totalCount() -> Int {
+        seizures.count
     }
 
     // MARK: - Persistence (Patient)
@@ -84,6 +147,8 @@ final class EpiLogStore: ObservableObject {
     }
 }
 
+// MARK: - Model
+
 struct SeizureEvent: Identifiable, Codable {
     let id: UUID
     let date: Date
@@ -93,6 +158,7 @@ struct SeizureEvent: Identifiable, Codable {
         self.date = date
     }
 }
+
 
 
 //@MainActor

@@ -57,8 +57,10 @@ struct DonutRadialBarRing: View {
                     let a0 = centerAngle - barWidth / 2
                     let a1 = centerAngle + barWidth / 2
 
-                    let r0 = innerR
-                    let r1 = innerR + (outerR - innerR) * t
+                    let inset: CGFloat = 0.8
+                    let r0 = innerR + inset
+                    let r1 = outerR - inset
+
 
                     var seg = Path()
                     seg.addArc(center: center,
