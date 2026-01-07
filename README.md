@@ -11,27 +11,19 @@ The goal is to replace messy paper diaries with a clean, modern, and pleasant-to
 
 - **Seizure logging**
   - Quick entry of seizure events
-  - Time, duration, type, and notes
   - Optional fields for triggers, context, and severity
+  - Optional report generation
 
 - **Medication overview**
   - List of current medications and doses
   - Easy to update when treatment changes
-
-- **Timeline & history**
-  - Scrollable history of past seizures
-  - Designed to make it easier to discuss events with clinicians
-
-- **Modern iOS design**
-  - SwiftUI-first layout
-  - Mesh / liquid-glass style background
-  - Focus on readability and accessibility
+ 
+  
 
 ## Tech Stack
 
 - **Language:** Swift
 - **UI Framework:** SwiftUI
-- **Architecture:** MVVM-style with ObservableObjects
 - **Minimum iOS Version:** iOS 17+ (adjust as needed)
 
 ## Getting Started
