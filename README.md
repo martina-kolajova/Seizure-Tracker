@@ -24,7 +24,6 @@ The goal is to replace messy paper diaries with a clean, modern, and pleasant-to
 
 - **Language:** Swift
 - **UI Framework:** SwiftUI
-- **Minimum iOS Version:** iOS 17+ (adjust as needed)
 
 ## Getting Started
 
