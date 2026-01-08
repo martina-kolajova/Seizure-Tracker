@@ -15,10 +15,10 @@ struct TrackerView: View {
 
     @State private var todayCount: Int = 0
     @State private var totalCount: Int = 0
-   
     @State private var violetPhase: Double = 0
-    
+   //  jen pro  tutu obrazovku
 
+    
     enum ProfileTab: String, Identifiable {
         case personal, diagnosis, medication
         var id: String { rawValue }

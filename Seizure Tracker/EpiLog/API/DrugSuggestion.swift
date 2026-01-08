@@ -5,23 +5,46 @@
 //  Created by Martina Kolajová on 06.12.2025.
 
 import Foundation
+import Combine
 
 
 struct DrugSuggestion: Identifiable {
     let id = UUID()
-    let displayName: String      // e.g. "LEVETIRACETAM (KEPPRA)"
+    let displayName: String
     let genericName: String?
     let brandName: String?
 }
 
+// MARK: - Codable models for FDA
+
+private struct FDADrugResponse: Decodable {
+    let results: [FDADrugItem]?
+    let error: FDAErrorBody?
+}
+
+private struct FDADrugItem: Decodable {
+    let brandName: String?
+    let genericName: String?
+
+    enum CodingKeys: String, CodingKey {
+        case brandName = "brand_name"
+        case genericName = "generic_name"
+    }
+}
+
+private struct FDAErrorBody: Decodable {
+    let message: String?
+}
+
 @MainActor
-class DrugLabelService: ObservableObject {
+final class DrugLabelService: ObservableObject {
     @Published var suggestions: [DrugSuggestion] = []
 
     private var searchTask: Task<Void, Never>?
 
     private let session: URLSession
     private let debounce: Duration
+    private let decoder = JSONDecoder()
 
     init(session: URLSession = .shared, debounce: Duration = .milliseconds(250)) {
         self.session = session
@@ -38,17 +61,16 @@ class DrugLabelService: ObservableObject {
         }
 
         searchTask = Task {
-            try? await Task.sleep(for: debounce) // debounce
+            try? await Task.sleep(for: debounce)
             guard !Task.isCancelled else { return }
             await fetch(term: trimmed)
         }
     }
 
-    // ⬇️ Make this internal (default) instead of private so tests can call it via @testable import.
     func fetch(term: String) async {
-        var components = URLComponents(string: "https://api.fda.gov/drug/ndc.json")!
-
         let q = term.lowercased()
+
+        var components = URLComponents(string: "https://api.fda.gov/drug/ndc.json")!
         components.queryItems = [
             .init(name: "search", value: "brand_name:\(q)* OR generic_name:\(q)*"),
             .init(name: "limit", value: "25")
@@ -57,32 +79,21 @@ class DrugLabelService: ObservableObject {
         guard let url = components.url else { return }
 
         do {
-            let (data, response) = try await session.data(from: url)
+            let (data, _) = try await session.data(from: url)
 
-            if let http = response as? HTTPURLResponse, http.statusCode != 200 {
-                // not fatal for autocomplete typing
-            }
+            // Decoding, no manual parsing
+            let decoded = try decoder.decode(FDADrugResponse.self, from: data)
 
-            guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            // FDA error payload => empty
+            if decoded.error != nil {
                 suggestions = []
                 return
             }
 
-            if root["error"] != nil {
-                suggestions = []
-                return
-            }
-
-            guard let resultsArray = root["results"] as? [[String: Any]] else {
-                suggestions = []
-                return
-            }
-
-            var collected: [DrugSuggestion] = []
-            for item in resultsArray {
-                let brand   = item["brand_name"] as? String
-                let generic = item["generic_name"] as? String
-                if brand == nil && generic == nil { continue }
+            let mapped = (decoded.results ?? []).compactMap { item -> DrugSuggestion? in
+                let brand = item.brandName
+                let generic = item.genericName
+                if brand == nil && generic == nil { return nil }
 
                 let display: String
                 switch (generic, brand) {
@@ -93,35 +104,38 @@ class DrugLabelService: ObservableObject {
                 case let (nil, b?):
                     display = b
                 default:
-                    continue
+                    return nil
                 }
 
-                collected.append(.init(displayName: display, genericName: generic, brandName: brand))
+                return DrugSuggestion(displayName: display, genericName: generic, brandName: brand)
             }
 
             // Dedupe by (generic, brand)
             var seen = Set<String>()
-            let unique = collected.filter { s in
+            let unique = mapped.filter { s in
                 let key = "\(s.genericName?.lowercased() ?? "")|\(s.brandName?.lowercased() ?? "")"
                 return seen.insert(key).inserted
             }
 
             // Sort: brand prefix first
-            let lowerTerm = term.lowercased()
             let sorted = unique.sorted {
-                let aPref = ($0.brandName?.lowercased().hasPrefix(lowerTerm) ?? false)
-                let bPref = ($1.brandName?.lowercased().hasPrefix(lowerTerm) ?? false)
+                let aPref = ($0.brandName?.lowercased().hasPrefix(q) ?? false)
+                let bPref = ($1.brandName?.lowercased().hasPrefix(q) ?? false)
                 if aPref != bPref { return aPref && !bPref }
                 return ($0.brandName ?? $0.genericName ?? "") < ($1.brandName ?? $1.genericName ?? "")
             }
 
             suggestions = sorted
+
         } catch {
             if let urlError = error as? URLError, urlError.code == .cancelled { return }
             suggestions = []
         }
     }
 }
+
+
+
 
 
 //struct DrugSuggestion: Identifiable {
@@ -137,6 +151,14 @@ class DrugLabelService: ObservableObject {
 //
 //    private var searchTask: Task<Void, Never>?
 //
+//    private let session: URLSession
+//    private let debounce: Duration
+//
+//    init(session: URLSession = .shared, debounce: Duration = .milliseconds(250)) {
+//        self.session = session
+//        self.debounce = debounce
+//    }
+//
 //    func search(term: String) {
 //        searchTask?.cancel()
 //
@@ -147,41 +169,37 @@ class DrugLabelService: ObservableObject {
 //        }
 //
 //        searchTask = Task {
-//            try? await Task.sleep(for: .milliseconds(250))   // debounce
+//            try? await Task.sleep(for: debounce) // debounce
 //            guard !Task.isCancelled else { return }
 //            await fetch(term: trimmed)
 //        }
 //    }
 //
-//    private func fetch(term: String) async {
+//    // ⬇️ Make this internal (default) instead of private so tests can call it via @testable import.
+//    func fetch(term: String) async {
 //        var components = URLComponents(string: "https://api.fda.gov/drug/ndc.json")!
 //
 //        let q = term.lowercased()
-//
-//        // NDC endpoint: regular fields brand_name / generic_name work great for autocomplete
 //        components.queryItems = [
 //            .init(name: "search", value: "brand_name:\(q)* OR generic_name:\(q)*"),
 //            .init(name: "limit", value: "25")
 //        ]
 //
 //        guard let url = components.url else { return }
-//        print("DrugNDC URL:", url.absoluteString)
 //
 //        do {
-//            let (data, response) = try await URLSession.shared.data(from: url)
+//            let (data, response) = try await session.data(from: url)
 //
 //            if let http = response as? HTTPURLResponse, http.statusCode != 200 {
-//                // NDC also returns 404 for no matches sometimes — not fatal during typing
-//                print("DrugNDC HTTP:", http.statusCode)
+//                // not fatal for autocomplete typing
 //            }
-//            // Parsovani
+//
 //            guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
 //                suggestions = []
 //                return
 //            }
 //
-//            if let errorInfo = root["error"] as? [String: Any] {
-//                // No matches → empty suggestions (normal while typing)
+//            if root["error"] != nil {
 //                suggestions = []
 //                return
 //            }
@@ -192,7 +210,6 @@ class DrugLabelService: ObservableObject {
 //            }
 //
 //            var collected: [DrugSuggestion] = []
-//
 //            for item in resultsArray {
 //                let brand   = item["brand_name"] as? String
 //                let generic = item["generic_name"] as? String
@@ -209,7 +226,7 @@ class DrugLabelService: ObservableObject {
 //                default:
 //                    continue
 //                }
-//                // Mapping to model
+//
 //                collected.append(.init(displayName: display, genericName: generic, brandName: brand))
 //            }
 //
@@ -230,12 +247,10 @@ class DrugLabelService: ObservableObject {
 //            }
 //
 //            suggestions = sorted
-//
 //        } catch {
 //            if let urlError = error as? URLError, urlError.code == .cancelled { return }
-//            print("🔴 DrugNDC error:", error)
 //            suggestions = []
 //        }
 //    }
-//
 //}
+//

@@ -8,8 +8,6 @@
 import SwiftUI
 
 
-import SwiftUI
-
 extension TrackerLayout {
 
     var distributionCard: some View {

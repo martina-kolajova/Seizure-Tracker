@@ -5,7 +5,7 @@
 //  Created by Martina Kolajová on 02.12.2025.
 //
 import SwiftUI
-import SwiftUI
+
 
 struct WelcomeView: View {
     let onStart: () -> Void

@@ -3,4 +3,158 @@
    uuid = "664508A3-C875-4360-BC3E-FD690364638C"
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "6B31D807-D08A-43BB-B30B-9F041E79B42B"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Seizure Tracker/EpiLog/API/DrugSuggestion.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "64"
+            endingLineNumber = "64"
+            landmarkName = "search(term:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "6B31D807-D08A-43BB-B30B-9F041E79B42B - f2b95cab140f9ac8"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for closure #1 () async -&gt; () in Seizure_Tracker.DrugLabelService.search(term: Swift.String) -&gt; ()"
+                  moduleName = "Seizure Tracker.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/martinakolajova/Desktop/app_develop/Playground/Seizure%20Tracker/Seizure%20Tracker/EpiLog/API/DrugSuggestion.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "64"
+                  endingLineNumber = "64">
+               </Location>
+               <Location
+                  uuid = "6B31D807-D08A-43BB-B30B-9F041E79B42B - adc147a508315e4a"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(3) suspend resume partial function for closure #1 () async -&gt; () in Seizure_Tracker.DrugLabelService.search(term: Swift.String) -&gt; ()"
+                  moduleName = "Seizure Tracker.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/martinakolajova/Desktop/app_develop/Playground/Seizure%20Tracker/Seizure%20Tracker/EpiLog/API/DrugSuggestion.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "64"
+                  endingLineNumber = "64">
+               </Location>
+               <Location
+                  uuid = "6B31D807-D08A-43BB-B30B-9F041E79B42B - 50d401c5e71c58f"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(6) suspend resume partial function for closure #1 () async -&gt; () in Seizure_Tracker.DrugLabelService.search(term: Swift.String) -&gt; ()"
+                  moduleName = "Seizure Tracker.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/martinakolajova/Desktop/app_develop/Playground/Seizure%20Tracker/Seizure%20Tracker/EpiLog/API/DrugSuggestion.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "64"
+                  endingLineNumber = "64">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "3959948B-BE65-4B11-B13D-6F15A6EAC22B"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Seizure Tracker/EpiLog/API/DrugSuggestion.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "62"
+            endingLineNumber = "62"
+            landmarkName = "search(term:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "3959948B-BE65-4B11-B13D-6F15A6EAC22B - 96cfc073871f6375"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Seizure_Tracker.DrugLabelService.search(term: Swift.String) -&gt; ()"
+                  moduleName = "Seizure Tracker.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/martinakolajova/Desktop/app_develop/Playground/Seizure%20Tracker/Seizure%20Tracker/EpiLog/API/DrugSuggestion.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "63"
+                  endingLineNumber = "63">
+               </Location>
+               <Location
+                  uuid = "3959948B-BE65-4B11-B13D-6F15A6EAC22B - 4b52d89ccc022bd7"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 () async -&gt; () in Seizure_Tracker.DrugLabelService.search(term: Swift.String) -&gt; ()"
+                  moduleName = "Seizure Tracker.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/martinakolajova/Desktop/app_develop/Playground/Seizure%20Tracker/Seizure%20Tracker/EpiLog/API/DrugSuggestion.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "63"
+                  endingLineNumber = "63">
+               </Location>
+               <Location
+                  uuid = "3959948B-BE65-4B11-B13D-6F15A6EAC22B - f2b95cab140f9a2f"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for closure #1 () async -&gt; () in Seizure_Tracker.DrugLabelService.search(term: Swift.String) -&gt; ()"
+                  moduleName = "Seizure Tracker.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/martinakolajova/Desktop/app_develop/Playground/Seizure%20Tracker/Seizure%20Tracker/EpiLog/API/DrugSuggestion.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "63"
+                  endingLineNumber = "63">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "AA47E924-6BDD-471F-9493-A3A73F3E1EA4"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Seizure Tracker/EpiLog/API/DrugSuggestion.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "56"
+            endingLineNumber = "56"
+            landmarkName = "search(term:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "5D335807-2952-4D22-981D-26343829FC17"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Seizure Tracker/EpiLog/Reusable components/MeshGradientView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "22"
+            endingLineNumber = "22"
+            landmarkName = "body"
+            landmarkType = "24">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>
