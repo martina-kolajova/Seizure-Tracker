@@ -6,69 +6,19 @@
 
 import SwiftUI
 
+
+
 struct TrackerLayout: View {
 
-    // MARK: - Top tab bar
-    enum TopTab: String {
-        case tracker = "Tracker"
-        case daily   = "Daily Status"
-    }
-
-    @State var selectedTab: TopTab = .tracker
-
-    @ObservedObject var store: EpiLogStore
-
-    // MARK: - Inputs
+    @ObservedObject var vm: TrackerViewModel
+    //   view does not own the ViewModel, but it observes it and re-renders whenever the ViewModel changes.
+    
     let patientName: String
     let onBack: () -> Void
     let onGenerateReport: () -> Void
-
-    @Binding var todayCount: Int
-    @Binding var totalCount: Int
-    @Binding var activeTab: TrackerView.ProfileTab?
-
-//    let hourlyCounts: [Int]
-
-
-
-    @Binding var violetPhase: Double
-
-
-    // MARK: - Today context state
-    @State var selectedDate: Date = Date()
-    @State private var showTodayDetails = false
-
-    @State private var mood: MoodChoice = .ok
-    @State private var sleep: SleepChoice = .ok
-    @State private var stress: StressChoice = .medium
-    @State private var triggers: Set<TriggerChoice> = []
-
-    @State private var medsTaken: Bool = false
-    @State private var rescueUsed: Bool = false
-    @State private var injury: Bool = false
-
-    @State private var note: String = ""
     
-    private func syncCounts() {
-        todayCount = store.count(for: selectedDate)
-        totalCount = store.totalCount()
-    }
-
-    private func logSeizureForSelectedDay() {
-        store.addSeizure(onDay: selectedDate)
-        withAnimation(.easeInOut(duration: 0.8)) {
-            violetPhase = min(violetPhase + 0.08, 1.0)
-        }
-        syncCounts()
-    }
-
-    private func undoSeizureForSelectedDay() {
-        _ = store.undoLastSeizure(onDay: selectedDate)
-        withAnimation(.easeInOut(duration: 0.5)) {
-            violetPhase = max(violetPhase - 0.06, 0.0)
-        }
-        syncCounts()
-    }
+    
+    @State private var showTodayDetails: Bool = true
 
 
     var body: some View {
@@ -84,32 +34,37 @@ struct TrackerLayout: View {
                     calendarStrip
 
                     Group {
-                        if selectedTab == .tracker {
+                        if vm.selectedTab == .tracker {
                             GlassCard { distributionCard }
                                 .transition(.opacity.combined(with: .move(edge: .leading)))
                         } else {
                             GlassCard {
                                 TodayCardContainer(
-                                    todayCount: $todayCount,
+                                    todayCount: $vm.todayCount,
                                     showDetails: $showTodayDetails,
-                                    mood: $mood,
-                                    sleep: $sleep,
-                                    stress: $stress,
-                                    triggers: $triggers,
-                                    medsTaken: $medsTaken,
-                                    rescueUsed: $rescueUsed,
-                                    injury: $injury,
-                                    note: $note,
-                                    onUndoLast: undoSeizureForSelectedDay,
-                                    onAddSeizure: logSeizureForSelectedDay,
 
+                                    mood: $vm.mood,
+                                    sleep: $vm.sleep,
+                                    stress: $vm.stress,
+                                    triggers: $vm.triggers,
+
+                                    medsTaken: $vm.medsTaken,
+                                    rescueUsed: $vm.rescueUsed,
+                                    injury: $vm.injury,
+                                    note: $vm.note,
+
+                                    onUndoLast: { vm.undoLast() },
+                                    onAddSeizure: { vm.logSeizure() },
                                     onGenerateReport: onGenerateReport
                                 )
                             }
                             .transition(.opacity.combined(with: .move(edge: .trailing)))
                         }
                     }
-                    .animation(.spring(response: 0.45, dampingFraction: 0.9), value: selectedTab)
+                    .animation(
+                        .spring(response: 0.45, dampingFraction: 0.9),
+                        value: vm.selectedTab
+                    )
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 16)
@@ -118,14 +73,13 @@ struct TrackerLayout: View {
         }
         .navigationBarHidden(true)
         .safeAreaInset(edge: .bottom) {
-            if selectedTab == .tracker {
+            if vm.selectedTab == .tracker {
                 VStack(spacing: 6) {
                     Text("Tap to log a seizure")
                         .font(.caption.weight(.semibold))
                         .foregroundColor(.white.opacity(0.80))
 
-                    BigLogBar(onTap: logSeizureForSelectedDay)
-
+                    BigLogBar(onTap: { vm.logSeizure() })
                 }
                 .padding(.horizontal, 14)
                 .padding(.bottom, 10)
@@ -133,19 +87,28 @@ struct TrackerLayout: View {
                 Color.clear.frame(height: 60)
             }
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.9), value: selectedTab)
-        .onAppear { syncCounts() }
-        .onChange(of: selectedDate) { _ in syncCounts() }
-        .onChange(of: store.seizures.count) { _ in syncCounts() }
-
+        .animation(
+            .spring(response: 0.4, dampingFraction: 0.9),
+            value: vm.selectedTab
+        )
+        .onAppear {
+            vm.syncCounts()
+        }
+        .onChange(of: vm.selectedDate) { _ in
+            vm.syncCounts()
+        }
     }
 }
 
 
 #Preview {
-    TrackerView(
-        patientName: "Martina",
+    let store = EpiLogStore()
+    let vm = TrackerViewModel(store: store)
+
+    return TrackerLayout(
+        vm: vm,
+        patientName: "Anna Novakova",
         onBack: {},
-        store: EpiLogStore()
+        onGenerateReport: {}
     )
 }

@@ -8,12 +8,12 @@
 import SwiftUI
 
 extension TrackerLayout {
+//    $ binding
 
-    // MARK: - Calendar strip
     var calendarStrip: some View {
         CalendarStrip(
-            selectedDate: $selectedDate,
-            violetPhase: violetPhase
+            selectedDate: $vm.selectedDate,
+            violetPhase: vm.violetPhase
         )
         .padding(.top, 8)
     }

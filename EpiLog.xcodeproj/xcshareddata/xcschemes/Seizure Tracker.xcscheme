@@ -18,7 +18,7 @@
                BlueprintIdentifier = "2A4276012EDE683500174316"
                BuildableName = "Seizure Tracker.app"
                BlueprintName = "Seizure Tracker"
-               ReferencedContainer = "container:Seizure Tracker.xcodeproj">
+               ReferencedContainer = "container:EpiLog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -38,7 +38,7 @@
                BlueprintIdentifier = "2A42760E2EDE683700174316"
                BuildableName = "Seizure TrackerTests.xctest"
                BlueprintName = "Seizure TrackerTests"
-               ReferencedContainer = "container:Seizure Tracker.xcodeproj">
+               ReferencedContainer = "container:EpiLog.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -49,7 +49,7 @@
                BlueprintIdentifier = "2A4276182EDE683700174316"
                BuildableName = "Seizure TrackerUITests.xctest"
                BlueprintName = "Seizure TrackerUITests"
-               ReferencedContainer = "container:Seizure Tracker.xcodeproj">
+               ReferencedContainer = "container:EpiLog.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -71,7 +71,7 @@
             BlueprintIdentifier = "2A4276012EDE683500174316"
             BuildableName = "Seizure Tracker.app"
             BlueprintName = "Seizure Tracker"
-            ReferencedContainer = "container:Seizure Tracker.xcodeproj">
+            ReferencedContainer = "container:EpiLog.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -88,7 +88,7 @@
             BlueprintIdentifier = "2A4276012EDE683500174316"
             BuildableName = "Seizure Tracker.app"
             BlueprintName = "Seizure Tracker"
-            ReferencedContainer = "container:Seizure Tracker.xcodeproj">
+            ReferencedContainer = "container:EpiLog.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

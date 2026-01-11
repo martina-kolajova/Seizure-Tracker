@@ -9,7 +9,6 @@ import SwiftUI
 
 extension TrackerLayout {
 
-    // MARK: - Top tab bar
     var topTabBar: some View {
         HStack(spacing: 8) {
             segTab(.tracker)
@@ -24,11 +23,11 @@ extension TrackerLayout {
     }
 
     func segTab(_ tab: TopTab) -> some View {
-        let isOn = (selectedTab == tab)
+        let isOn = (vm.selectedTab == tab)
 
         return Button {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.92)) {
-                selectedTab = tab
+                vm.selectedTab = tab
             }
         } label: {
             Text(tab.rawValue)

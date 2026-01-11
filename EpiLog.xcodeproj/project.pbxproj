@@ -195,7 +195,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 2A4275FD2EDE683500174316 /* Build configuration list for PBXProject "Seizure Tracker" */;
+			buildConfigurationList = 2A4275FD2EDE683500174316 /* Build configuration list for PBXProject "EpiLog" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -533,7 +533,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2A4275FD2EDE683500174316 /* Build configuration list for PBXProject "Seizure Tracker" */ = {
+		2A4275FD2EDE683500174316 /* Build configuration list for PBXProject "EpiLog" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2A4276212EDE683700174316 /* Debug */,

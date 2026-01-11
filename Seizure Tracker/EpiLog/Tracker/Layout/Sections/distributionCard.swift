@@ -11,13 +11,11 @@ import SwiftUI
 extension TrackerLayout {
 
     var distributionCard: some View {
-        let hourlyCounts = store.hourlyBins12(for: selectedDate) // 12 bins
+        let hourlyCounts = vm.hourlyCounts12  // ✅ from VM
 
-
-        // fixed scale so colors don’t jump
         let colorCap = 6
 
-        let p = max(0, min(1, violetPhase))
+        let p = max(0, min(1, vm.violetPhase)) // ✅ from VM
         let hue: Double = 0.78
         let saturation = 0.35 + 0.50 * p
         let brightness = 0.98 - 0.45 * p
