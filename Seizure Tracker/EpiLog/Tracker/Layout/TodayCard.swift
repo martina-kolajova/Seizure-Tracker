@@ -56,36 +56,38 @@ struct TodayCard: View {
 
                 // Optional: quick undo + plus (or keep only bottom log button)
                 VStack(spacing: 10) {
-                    Button {
-                        print("Undo")
-                        onUndoLast()
-                    } label: {
-                        Image(systemName: "minus")
-                            .font(.system(size: 16, weight: .bold))
-                            .frame(width: 36, height: 36)
-                            .foregroundColor(.white)
-                            .background(
-                                Circle()
-                                    .fill(Color.white.opacity(0.18))
-                            )
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
-                            )
-                    }
-                    .buttonStyle(.plain)
-                
 
-                    Button(action: onAddSeizure) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 16, weight: .bold))
-                            .frame(width: 36, height: 36)
+                        // ADD (plus) — on top
+                        Button(action: onAddSeizure) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 16, weight: .bold))
+                                .frame(width: 36, height: 36)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundColor(.white)
+                        .background(.white.opacity(0.16), in: Circle())
+                        .overlay(Circle().stroke(.white.opacity(0.20), lineWidth: 1))
+
+                        // UNDO (minus) — below
+                        Button {
+                            print("Undo")
+                            onUndoLast()
+                        } label: {
+                            Image(systemName: "minus")
+                                .font(.system(size: 16, weight: .bold))
+                                .frame(width: 36, height: 36)
+                                .foregroundColor(.white)
+                                .background(
+                                    Circle()
+                                        .fill(Color.white.opacity(0.18))
+                                )
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                                )
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
-                    .foregroundColor(.white)
-                    .background(.white.opacity(0.16), in: Circle())
-                    .overlay(Circle().stroke(.white.opacity(0.20), lineWidth: 1))
-                }
 
             }
 

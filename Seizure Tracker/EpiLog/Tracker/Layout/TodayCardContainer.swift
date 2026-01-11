@@ -58,14 +58,14 @@ struct TodayCardContainer: View {
                 }
                 .buttonStyle(.plain)
 
-                // 🔹 Existing quick indicators
-                HStack(spacing: 10) {
-                    Image(systemName: medsTaken ? "pills.fill" : "pills")
-                        .foregroundColor(.white.opacity(0.75))
-
-                    Image(systemName: sleep == .good ? "bed.double.fill" : "bed.double")
-                        .foregroundColor(.white.opacity(0.75))
-                }
+//                // 🔹 Existing quick indicators
+//                HStack(spacing: 10) {
+//                    Image(systemName: medsTaken ? "pills.fill" : "pills")
+//                        .foregroundColor(.white.opacity(0.75))
+//
+//                    Image(systemName: sleep == .good ? "bed.double.fill" : "bed.double")
+//                        .foregroundColor(.white.opacity(0.75))
+//                }
             }
 
             Divider().opacity(0.25)

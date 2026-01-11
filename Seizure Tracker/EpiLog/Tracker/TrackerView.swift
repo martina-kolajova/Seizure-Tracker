@@ -6,25 +6,41 @@
 import SwiftUI
 
 
+
 struct TrackerView: View {
     let patientName: String
     let onBack: () -> Void
-    
 
     @ObservedObject var store: EpiLogStore
 
     @State private var todayCount: Int = 0
     @State private var totalCount: Int = 0
     @State private var violetPhase: Double = 0
-   //  jen pro  tutu obrazovku
 
-    
+    // MARK: - Profile tabs
     enum ProfileTab: String, Identifiable {
         case personal, diagnosis, medication
         var id: String { rawValue }
     }
-    @State private var activeTab: ProfileTab? = nil
-    
+
+    // MARK: - Sheet routing 
+    enum SheetRoute: Identifiable {
+        case profile(ProfileTab)
+        case report(String)
+
+        var id: String {
+            switch self {
+            case .profile(let tab):
+                return "profile-\(tab.rawValue)"
+            case .report:
+                return "report"
+            }
+        }
+    }
+
+    @State private var sheetRoute: SheetRoute?
+
+    // MARK: - Report generation
     private func generateReport() {
         let p = store.patient
 
@@ -32,62 +48,66 @@ struct TrackerView: View {
         df.dateStyle = .medium
         df.timeStyle = .short
 
-        print("📄 SEIZURE REPORT")
-        print("Patient: \(p.firstName) \(p.lastName)")
-        print("Diagnosis: \(p.diagnosisText.isEmpty ? "—" : p.diagnosisText)")
-        print("Medication: \(p.medicationText.isEmpty ? "—" : p.medicationText)")
-        print("")
+        var lines: [String] = []
+        lines.append("📄 Seizure Report")
+        lines.append("")
+        lines.append("Patient: \(p.firstName) \(p.lastName)")
+        lines.append("Diagnosis: \(p.diagnosisText.isEmpty ? "—" : p.diagnosisText)")
+        lines.append("Medication: \(p.medicationText.isEmpty ? "—" : p.medicationText)")
+        lines.append("")
+        lines.append("Total seizures: \(store.seizures.count)")
+        lines.append("")
 
-        print("Total seizures: \(store.seizures.count)")
         if store.seizures.isEmpty {
-            print("No seizures logged.")
-            return
+            lines.append("No seizures logged.")
+        } else {
+            lines.append("Seizure timestamps:")
+            for (i, ev) in store.seizures.enumerated() {
+                lines.append("\(i + 1). \(df.string(from: ev.date))")
+            }
         }
 
-        print("Seizure timestamps:")
-        for (i, ev) in store.seizures.enumerated() {
-            print("\(i + 1). \(df.string(from: ev.date))")
-        }
+        sheetRoute = .report(lines.joined(separator: "\n"))
     }
 
-
-
-
+    // MARK: - Body
     var body: some View {
         NavigationStack {
             TrackerLayout(
-                store: store,                 // ✅ FIX (was missing)
+                store: store,
                 patientName: patientName,
                 onBack: onBack,
                 onGenerateReport: generateReport,
                 todayCount: $todayCount,
                 totalCount: $totalCount,
-                activeTab: $activeTab,
+                activeTab: .constant(nil), // no longer used directly
                 violetPhase: $violetPhase
             )
-            .sheet(item: $activeTab) { tab in
-                profileSheet(tab)
+            .sheet(item: $sheetRoute) { route in
+                switch route {
+
+                case .profile(_):
+                    PatientDelegate(
+                        store: store,
+                        onBack: { sheetRoute = nil },
+                        onContinue: { sheetRoute = nil }
+                    )
+
+                case .report(let text):
+                    ReportView(text: text)
+                }
             }
         }
-    }
-
-    
-
-    @ViewBuilder
-    private func profileSheet(_ tab: ProfileTab) -> some View {
-        PatientDelegate(
-            store: store,
-            onBack: { activeTab = nil },
-            onContinue: { activeTab = nil }
-        )
     }
 }
 
 #Preview {
     TrackerView(
-        patientName: "Martina",
+        patientName: "Anna Novakova",
         onBack: {},
         store: EpiLogStore()
     )
 }
+
+
 
