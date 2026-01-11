@@ -29,9 +29,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2A4276022EDE683500174316 /* Seizure Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Seizure Tracker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		2A42760F2EDE683700174316 /* Seizure TrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Seizure TrackerTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		2A4276192EDE683700174316 /* Seizure TrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Seizure TrackerUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2A4276022EDE683500174316 /* EpiLog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EpiLog.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2A42760F2EDE683700174316 /* EpiLogTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EpiLogTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2A4276192EDE683700174316 /* EpiLogUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EpiLogUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -92,9 +92,9 @@
 		2A4276032EDE683500174316 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				2A4276022EDE683500174316 /* Seizure Tracker.app */,
-				2A42760F2EDE683700174316 /* Seizure TrackerTests.xctest */,
-				2A4276192EDE683700174316 /* Seizure TrackerUITests.xctest */,
+				2A4276022EDE683500174316 /* EpiLog.app */,
+				2A42760F2EDE683700174316 /* EpiLogTests.xctest */,
+				2A4276192EDE683700174316 /* EpiLogUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -102,9 +102,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		2A4276012EDE683500174316 /* Seizure Tracker */ = {
+		2A4276012EDE683500174316 /* EpiLog */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2A4276232EDE683700174316 /* Build configuration list for PBXNativeTarget "Seizure Tracker" */;
+			buildConfigurationList = 2A4276232EDE683700174316 /* Build configuration list for PBXNativeTarget "EpiLog" */;
 			buildPhases = (
 				2A4275FE2EDE683500174316 /* Sources */,
 				2A4275FF2EDE683500174316 /* Frameworks */,
@@ -117,18 +117,18 @@
 			fileSystemSynchronizedGroups = (
 				2A4276042EDE683500174316 /* Seizure Tracker */,
 			);
-			name = "Seizure Tracker";
+			name = EpiLog;
 			packageProductDependencies = (
 				2A42763C2EE2891A00174316 /* FuturedArchitecture */,
 				2A42763E2EE2891A00174316 /* FuturedHelpers */,
 			);
 			productName = "Seizure Tracker";
-			productReference = 2A4276022EDE683500174316 /* Seizure Tracker.app */;
+			productReference = 2A4276022EDE683500174316 /* EpiLog.app */;
 			productType = "com.apple.product-type.application";
 		};
-		2A42760E2EDE683700174316 /* Seizure TrackerTests */ = {
+		2A42760E2EDE683700174316 /* EpiLogTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2A4276262EDE683700174316 /* Build configuration list for PBXNativeTarget "Seizure TrackerTests" */;
+			buildConfigurationList = 2A4276262EDE683700174316 /* Build configuration list for PBXNativeTarget "EpiLogTests" */;
 			buildPhases = (
 				2A42760B2EDE683700174316 /* Sources */,
 				2A42760C2EDE683700174316 /* Frameworks */,
@@ -142,16 +142,16 @@
 			fileSystemSynchronizedGroups = (
 				2A4276122EDE683700174316 /* Seizure TrackerTests */,
 			);
-			name = "Seizure TrackerTests";
+			name = EpiLogTests;
 			packageProductDependencies = (
 			);
 			productName = "Seizure TrackerTests";
-			productReference = 2A42760F2EDE683700174316 /* Seizure TrackerTests.xctest */;
+			productReference = 2A42760F2EDE683700174316 /* EpiLogTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		2A4276182EDE683700174316 /* Seizure TrackerUITests */ = {
+		2A4276182EDE683700174316 /* EpiLogUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2A4276292EDE683700174316 /* Build configuration list for PBXNativeTarget "Seizure TrackerUITests" */;
+			buildConfigurationList = 2A4276292EDE683700174316 /* Build configuration list for PBXNativeTarget "EpiLogUITests" */;
 			buildPhases = (
 				2A4276152EDE683700174316 /* Sources */,
 				2A4276162EDE683700174316 /* Frameworks */,
@@ -165,11 +165,11 @@
 			fileSystemSynchronizedGroups = (
 				2A42761C2EDE683700174316 /* Seizure TrackerUITests */,
 			);
-			name = "Seizure TrackerUITests";
+			name = EpiLogUITests;
 			packageProductDependencies = (
 			);
 			productName = "Seizure TrackerUITests";
-			productReference = 2A4276192EDE683700174316 /* Seizure TrackerUITests.xctest */;
+			productReference = 2A4276192EDE683700174316 /* EpiLogUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -212,9 +212,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				2A4276012EDE683500174316 /* Seizure Tracker */,
-				2A42760E2EDE683700174316 /* Seizure TrackerTests */,
-				2A4276182EDE683700174316 /* Seizure TrackerUITests */,
+				2A4276012EDE683500174316 /* EpiLog */,
+				2A42760E2EDE683700174316 /* EpiLogTests */,
+				2A4276182EDE683700174316 /* EpiLogUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -270,12 +270,12 @@
 /* Begin PBXTargetDependency section */
 		2A4276112EDE683700174316 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 2A4276012EDE683500174316 /* Seizure Tracker */;
+			target = 2A4276012EDE683500174316 /* EpiLog */;
 			targetProxy = 2A4276102EDE683700174316 /* PBXContainerItemProxy */;
 		};
 		2A42761B2EDE683700174316 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 2A4276012EDE683500174316 /* Seizure Tracker */;
+			target = 2A4276012EDE683500174316 /* EpiLog */;
 			targetProxy = 2A42761A2EDE683700174316 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -473,7 +473,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Seizure Tracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Seizure Tracker";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/EpiLog.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/EpiLog";
 			};
 			name = Debug;
 		};
@@ -492,7 +492,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Seizure Tracker.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Seizure Tracker";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/EpiLog.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/EpiLog";
 			};
 			name = Release;
 		};
@@ -542,7 +542,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2A4276232EDE683700174316 /* Build configuration list for PBXNativeTarget "Seizure Tracker" */ = {
+		2A4276232EDE683700174316 /* Build configuration list for PBXNativeTarget "EpiLog" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2A4276242EDE683700174316 /* Debug */,
@@ -551,7 +551,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2A4276262EDE683700174316 /* Build configuration list for PBXNativeTarget "Seizure TrackerTests" */ = {
+		2A4276262EDE683700174316 /* Build configuration list for PBXNativeTarget "EpiLogTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2A4276272EDE683700174316 /* Debug */,
@@ -560,7 +560,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2A4276292EDE683700174316 /* Build configuration list for PBXNativeTarget "Seizure TrackerUITests" */ = {
+		2A4276292EDE683700174316 /* Build configuration list for PBXNativeTarget "EpiLogUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2A42762A2EDE683700174316 /* Debug */,

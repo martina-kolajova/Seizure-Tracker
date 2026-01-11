@@ -8,106 +8,96 @@
 
 import SwiftUI
 
-// MARK: - Today Card (layout only)
 
-struct TodayCard: View {
-    @Binding var todayCount: Int
+struct DailyStatus: View {
+    // display-only
+    let todayCount: Int
 
-    // quick context
+    // context bindings
     @Binding var mood: MoodChoice
     @Binding var sleep: SleepChoice
     @Binding var stress: StressChoice
-
-    // multi-select triggers
     @Binding var triggers: Set<TriggerChoice>
 
-    // toggles
     @Binding var medsTaken: Bool
     @Binding var rescueUsed: Bool
     @Binding var injury: Bool
-
     @Binding var note: String
 
-    // actions (wire later)
-    
-    var onUndoLast: () -> Void = { }
-    var onAddSeizure: () -> Void = { } // optional if you want a button inside the card
+    // actions
+    let onUndoLast: () -> Void
+    let onGenerateReport: () -> Void
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
 
-            // Header row
-            HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 4) {
-//                    Text("Today")
-//                        .font(.headline)
-//                        .foregroundColor(.white.opacity(0.92))
-
-                    HStack(alignment: .firstTextBaseline, spacing: 10) {
-                        Text("\(todayCount)")
-                            .font(.system(size: 52, weight: .bold))
-                            .foregroundColor(.white)
-
-                        Text("seizures")
-                            .foregroundColor(.white.opacity(0.8))
-                    }
+            // Header
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Today at a glance")
+                        .font(.headline)
+                        .foregroundColor(.white.opacity(0.92))
                 }
 
                 Spacer()
 
-                // Optional: quick undo + plus (or keep only bottom log button)
-                VStack(spacing: 10) {
-
-                        // ADD (plus) — on top
-                        Button(action: onAddSeizure) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 16, weight: .bold))
-                                .frame(width: 36, height: 36)
-                        }
-                        .buttonStyle(.plain)
-                        .foregroundColor(.white)
-                        .background(.white.opacity(0.16), in: Circle())
-                        .overlay(Circle().stroke(.white.opacity(0.20), lineWidth: 1))
-
-                        // UNDO (minus) — below
-                        Button {
-                            print("Undo")
-                            onUndoLast()
-                        } label: {
-                            Image(systemName: "minus")
-                                .font(.system(size: 16, weight: .bold))
-                                .frame(width: 36, height: 36)
-                                .foregroundColor(.white)
-                                .background(
-                                    Circle()
-                                        .fill(Color.white.opacity(0.18))
-                                )
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color.white.opacity(0.25), lineWidth: 1)
-                                )
-                        }
-                        .buttonStyle(.plain)
+                Button(action: onGenerateReport) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "doc.text")
+                        Text("Report")
                     }
-
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.white.opacity(0.18))
+                    )
+                }
+                .buttonStyle(.plain)
             }
 
             Divider().opacity(0.25)
 
-            // Mood / Sleep / Stress (single-select chips)
+            // Count row + Undo
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                Text("\(todayCount)")
+                    .font(.system(size: 52, weight: .bold))
+                    .foregroundColor(.white)
+
+                Text("seizures")
+                    .foregroundColor(.white.opacity(0.8))
+
+                Spacer()
+
+                Button(action: onUndoLast) {
+                    Image(systemName: "minus")
+                        .font(.system(size: 16, weight: .bold))
+                        .frame(width: 36, height: 36)
+                        .foregroundColor(.white)
+                        .background(.white.opacity(0.16), in: Circle())
+                        .overlay(Circle().stroke(.white.opacity(0.20), lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+            }
+
+            Divider().opacity(0.25)
+
+            // Mood / Sleep / Stress
             VStack(alignment: .leading, spacing: 10) {
                 ChipRowSingle(title: "Mood", selection: $mood, items: MoodChoice.allCases)
                 ChipRowSingle(title: "Sleep", selection: $sleep, items: SleepChoice.allCases)
                 ChipRowSingle(title: "Stress", selection: $stress, items: StressChoice.allCases)
             }
 
-            // Triggers (multi-select chips)
+            // Triggers
             VStack(alignment: .leading, spacing: 8) {
                 Text("Triggers")
                     .font(.caption.weight(.semibold))
                     .foregroundColor(.white.opacity(0.75))
 
                 FlowChipsMulti(items: TriggerChoice.allCases, selection: $triggers)
-
             }
 
             // Toggles
@@ -137,7 +127,6 @@ struct TodayCard: View {
         }
     }
 }
-
 
 
 #Preview {

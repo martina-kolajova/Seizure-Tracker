@@ -22,7 +22,6 @@ struct DrugSuggestion: Identifiable {
 
 
 
-
 // MARK: - Codable models for FDA
 
 private struct FDADrugResponse: Decodable {

@@ -40,7 +40,7 @@ struct ContentView: View {
                     .transition(currentTransition)
 
                 case .patientInfo:
-                    PatientDelegate(
+                    PatientInfoFlowView(
                         store: store,
                         onBack: {
                             navDirection = .backward

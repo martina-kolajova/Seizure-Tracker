@@ -39,22 +39,17 @@ struct TrackerLayout: View {
                                 .transition(.opacity.combined(with: .move(edge: .leading)))
                         } else {
                             GlassCard {
-                                TodayCardContainer(
-                                    todayCount: $vm.todayCount,
-                                    showDetails: $showTodayDetails,
-
+                                DailyStatus(
+                                    todayCount: vm.todayCount,
                                     mood: $vm.mood,
                                     sleep: $vm.sleep,
                                     stress: $vm.stress,
                                     triggers: $vm.triggers,
-
                                     medsTaken: $vm.medsTaken,
                                     rescueUsed: $vm.rescueUsed,
                                     injury: $vm.injury,
                                     note: $vm.note,
-
                                     onUndoLast: { vm.undoLast() },
-                                    onAddSeizure: { vm.logSeizure() },
                                     onGenerateReport: onGenerateReport
                                 )
                             }

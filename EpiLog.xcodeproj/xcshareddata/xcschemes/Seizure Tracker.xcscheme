@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2A4276012EDE683500174316"
-               BuildableName = "Seizure Tracker.app"
-               BlueprintName = "Seizure Tracker"
+               BuildableName = "EpiLog.app"
+               BlueprintName = "EpiLog"
                ReferencedContainer = "container:EpiLog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -36,8 +36,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2A42760E2EDE683700174316"
-               BuildableName = "Seizure TrackerTests.xctest"
-               BlueprintName = "Seizure TrackerTests"
+               BuildableName = "EpiLogTests.xctest"
+               BlueprintName = "EpiLogTests"
                ReferencedContainer = "container:EpiLog.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -47,8 +47,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2A4276182EDE683700174316"
-               BuildableName = "Seizure TrackerUITests.xctest"
-               BlueprintName = "Seizure TrackerUITests"
+               BuildableName = "EpiLogUITests.xctest"
+               BlueprintName = "EpiLogUITests"
                ReferencedContainer = "container:EpiLog.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -69,8 +69,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2A4276012EDE683500174316"
-            BuildableName = "Seizure Tracker.app"
-            BlueprintName = "Seizure Tracker"
+            BuildableName = "EpiLog.app"
+            BlueprintName = "EpiLog"
             ReferencedContainer = "container:EpiLog.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -86,8 +86,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2A4276012EDE683500174316"
-            BuildableName = "Seizure Tracker.app"
-            BlueprintName = "Seizure Tracker"
+            BuildableName = "EpiLog.app"
+            BlueprintName = "EpiLog"
             ReferencedContainer = "container:EpiLog.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
