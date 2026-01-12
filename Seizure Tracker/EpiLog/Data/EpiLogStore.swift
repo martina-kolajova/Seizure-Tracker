@@ -63,11 +63,6 @@ final class EpiLogStore: ObservableObject {
         seizures.sort { $0.date < $1.date }
     }
 
-//    /// Removes the most recently added seizure event.
-//    func undoLastSeizure() {
-//        _ = seizures.popLast()
-//    }
-
     /// Groups seizures into 12 hourly bins for a given day (used for charts).
     func hourlyBins12(for day: Date) -> [Int] {
         var bins = Array(repeating: 0, count: 12)
@@ -122,7 +117,7 @@ final class EpiLogStore: ObservableObject {
         seizures.count
     }
 
-    // MARK: - Persistence (Patient)
+    // Persistence (Patient)
 
     /// Saves patient data to UserDefaults.
     private func savePatient() {

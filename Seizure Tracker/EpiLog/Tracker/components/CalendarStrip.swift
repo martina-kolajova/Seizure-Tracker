@@ -4,21 +4,34 @@
 //
 //  Created by Martina Kolajová on 03.01.2026.
 
+// CalendarStrip is a reusable SwiftUI component that displays a week-based calendar
+// and exposes the selected date via a binding, keeping date logic internal and the parent view in control of state
+
+
+
 import SwiftUI
 
+/// Weekly calendar strip with selectable days.
 struct CalendarStrip: View {
-    @Binding var selectedDate: Date
-    let violetPhase: Double
 
-    // MARK: - Derived
-    private var selected: Date { selectedDate } // Binding -> Date (SwiftUI gives Date here)
-    private var selectedDayKey: Date { Calendar.current.startOfDay(for: selected) }
-    private var dates: [Date] { weekDates(around: selected) }
+    /// Selected date controlled by parent view.
+    @Binding var selectedDate: Date
+
+    // MARK: - Derived state
+
+    private var selected: Date { selectedDate }
+    private var selectedDayKey: Date {
+        Calendar.current.startOfDay(for: selected)
+    }
+    private var dates: [Date] {
+        weekDates(around: selected)
+    }
+
+    // MARK: - View
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
 
-            // Header row
             HStack(spacing: 10) {
                 Image(systemName: "calendar")
                     .font(.system(size: 16, weight: .semibold))
@@ -44,7 +57,6 @@ struct CalendarStrip: View {
                 .buttonStyle(.plain)
             }
 
-            // 7-day strip
             HStack(spacing: 8) {
                 ForEach(dates, id: \.self) { date in
                     let isSelected = isSameDay(date, selectedDayKey)
@@ -55,7 +67,9 @@ struct CalendarStrip: View {
                         VStack(spacing: 6) {
                             Text(dayLabel(date))
                                 .font(.caption2.weight(.semibold))
-                                .foregroundColor(.white.opacity(isSelected ? 1.0 : 0.65))
+                                .foregroundColor(
+                                    .white.opacity(isSelected ? 1.0 : 0.65)
+                                )
 
                             Text(dayNumber(date))
                                 .font(.callout.weight(.bold))
@@ -84,17 +98,14 @@ struct CalendarStrip: View {
         )
     }
 
-    // MARK: - Helpers
+    // MARK: - Date helpers
 
     private func weekDates(around date: Date) -> [Date] {
         let cal = Calendar.current
         let dayKey = cal.startOfDay(for: date)
-
-        // weekday: 1=Sun ... 7=Sat
         let weekday = cal.component(.weekday, from: dayKey)
 
-        // Monday-start week
-        let mondayOffset = (weekday + 5) % 7 // Sun->6, Mon->0, Tue->1...
+        let mondayOffset = (weekday + 5) % 7
         let monday = cal.date(byAdding: .day, value: -mondayOffset, to: dayKey) ?? dayKey
 
         return (0..<7).compactMap { cal.date(byAdding: .day, value: $0, to: monday) }

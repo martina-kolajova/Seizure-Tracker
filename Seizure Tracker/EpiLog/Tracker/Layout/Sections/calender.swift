@@ -13,7 +13,7 @@ extension TrackerLayout {
     var calendarStrip: some View {
         CalendarStrip(
             selectedDate: $vm.selectedDate,
-            violetPhase: vm.violetPhase
+//            violetPhase: vm.violetPhase
         )
         .padding(.top, 8)
     }

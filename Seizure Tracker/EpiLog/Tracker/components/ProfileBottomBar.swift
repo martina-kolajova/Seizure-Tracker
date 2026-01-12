@@ -1,6 +1,5 @@
 //
 //  ProfileBottomBar.swift
-//  Seizure Tracker
 //
 //  Created by Martina Kolajová on 16.12.2025.
 //
