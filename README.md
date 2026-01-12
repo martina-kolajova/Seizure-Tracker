@@ -1,4 +1,12 @@
-# EpiLog
+<h1>
+  <img src="https://github.com/user-attachments/assets/977c3990-038a-44b8-92df-7b1adff89c1d"
+       width="36"
+       style="vertical-align: middle; margin-right: 10px;" />
+  EpiLog
+</h1>
+
+<p>iOS seizure tracking app built with SwiftUI & MVVM</p>
+
 
 EpiLog is an iOS app built in SwiftUI that helps people with epilepsy (and their clinicians) keep a clear, structured log of seizures, triggers, and medications.  
 The goal is to replace messy paper diaries with a clean, modern, and pleasant-to-use app that makes patterns in seizures easier to spot.
