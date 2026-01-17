@@ -7,6 +7,8 @@ import SwiftUI
 /// - Passes shared dependencies to child flows
 struct TrackerView: View {
 
+
+
     /// Displayed patient name (UI-only value)
     let patientName: String
 
@@ -36,31 +38,25 @@ struct TrackerView: View {
         _vm = StateObject(wrappedValue: TrackerViewModel(store: store))
     }
 
-    // MARK: - Profile tabs (used for sheet routing)
-
-    /// Tabs for patient profile flow (used by sheet navigation)
-    enum ProfileTab: String, Identifiable {
-        case personal, diagnosis, medication
-        var id: String { rawValue }
-    }
-
     // MARK: - Sheet routing
 
-    /// Centralized sheet routing for this screen.
-    /// Keeps navigation logic out of child views.
+    /// Sheet-level navigation owned by TrackerView
+    /// - profile: opens PatientInfo flow (starts at menu)
+    /// - report: shows generated seizure report
     enum SheetRoute: Identifiable {
-        case profile(ProfileTab)
+        case profile
         case report(String)
 
         var id: String {
             switch self {
-            case .profile(let tab):
-                return "profile-\(tab.rawValue)"
+            case .profile:
+                return "profile"
             case .report:
                 return "report"
             }
         }
     }
+
 
     /// Current active sheet (if any)
     @State private var sheetRoute: SheetRoute?
@@ -90,10 +86,11 @@ struct TrackerView: View {
                 /// Patient profile setup / edit flow
                 case .profile:
                     PatientInfoFlowView(
-                        store: store,                 // shared store passed down
+                        store: store,
                         onBack: { sheetRoute = nil },
                         onContinue: { sheetRoute = nil }
                     )
+
 
                 /// Generated seizure report
                 case .report(let text):
