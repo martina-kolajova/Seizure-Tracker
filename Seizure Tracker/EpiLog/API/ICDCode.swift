@@ -7,24 +7,13 @@
 import Foundation
 import SwiftUI
 
-
-
 /// Model representing one ICD-10 autocomplete suggestion
 /// (e.g. "A00.0 – Cholera due to Vibrio cholerae")
 struct ICDSuggestion: Identifiable, Equatable {
-
-    /// Unique identifier required by SwiftUI.
-    /// Used for diffing and animations in lists (`ForEach`, `List`).
-    let id = UUID()
-
-    /// ICD-10 diagnosis code (e.g. "A00.0")
+    var id: String { "\(code)-\(name)" }
     let code: String
-
-    /// Human-readable diagnosis name
-    /// (e.g. "Cholera due to Vibrio cholerae 01, biovar cholerae")
     let name: String
 }
-
 
 /// NLM ClinicalTables ICD-10 API returns an ARRAY:
 /// [count, [codes], null, [[code, name], ...]]
@@ -54,8 +43,6 @@ struct ICD10Response: Decodable, Equatable {
     }
 }
 
-
-
 @MainActor
 final class ICD10Service: ObservableObject {
     @Published private(set) var suggestions: [ICDSuggestion] = []
@@ -64,6 +51,9 @@ final class ICD10Service: ObservableObject {
     private let session: URLSession
     private let decoder: JSONDecoder
     private let debounceNanos: UInt64
+
+    /// Used to ignore stale async responses (old term finishes after new one).
+    private var latestTerm: String = ""
 
     init(
         session: URLSession = .shared,
@@ -79,6 +69,9 @@ final class ICD10Service: ObservableObject {
         searchTask?.cancel()
 
         let trimmed = term.trimmingCharacters(in: .whitespacesAndNewlines)
+        latestTerm = trimmed
+
+        // If short/empty, clear suggestions immediately and don't fetch
         guard trimmed.count >= 2 else {
             suggestions = []
             return
@@ -95,7 +88,7 @@ final class ICD10Service: ObservableObject {
         }
     }
 
-    func fetch(term: String) async {
+    private func fetch(term: String) async {
         var components = URLComponents(string: "https://clinicaltables.nlm.nih.gov/api/icd10cm/v3/search")!
         components.queryItems = [
             URLQueryItem(name: "sf", value: "code,name"),
@@ -106,11 +99,22 @@ final class ICD10Service: ObservableObject {
 
         do {
             let (data, _) = try await session.data(from: url)
+
+            // If user typed something else while we were waiting, ignore this response
+            guard term == latestTerm else { return }
+
             let decoded = try decoder.decode(ICD10Response.self, from: data)
+
+            // Guard again in case decoding took time and term changed
+            guard term == latestTerm else { return }
+
             suggestions = decoded.suggestions
         } catch {
             // If cancelled, do nothing special (common during typing)
             if let e = error as? URLError, e.code == .cancelled { return }
+
+            // Only clear if this request is still the latest
+            guard term == latestTerm else { return }
             suggestions = []
         }
     }

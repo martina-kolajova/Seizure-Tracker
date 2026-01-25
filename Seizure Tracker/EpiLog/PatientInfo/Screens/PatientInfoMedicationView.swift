@@ -26,7 +26,7 @@ struct PatientInfoMedicationView: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
 
-                            TextField("Start typing medication…", text: $vm.medicationText, axis: .vertical)
+                            TextField("Example: Keppra", text: $vm.medicationText, axis: .vertical)
                                 .lineLimit(1...3)
                                 .font(.body.weight(.semibold))
                                 .textFieldStyle(.plain)

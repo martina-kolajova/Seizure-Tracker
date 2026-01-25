@@ -29,14 +29,16 @@ struct PatientInfoDiagnosisView: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
 
-                            TextField("Start typing diagnosis…", text: $vm.diagnosisText, axis: .vertical)
+                            TextField("Example: Epilepsy", text: $vm.diagnosisText, axis: .vertical)
                                 .lineLimit(1...3)
                                 .font(.body.weight(.semibold))
                                 .textFieldStyle(.plain)
                                 .autocorrectionDisabled()
-                                .onChange(of: vm.diagnosisText) { newValue in
+                                .textSelection(.disabled)   // ⭐ FIX
+                                .onChange(of: vm.diagnosisText) { _, newValue in
                                     vm.onDiagnosisChanged(newValue)
                                 }
+
 
                             Divider()
                         }
