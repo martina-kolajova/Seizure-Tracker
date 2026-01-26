@@ -13,7 +13,7 @@ struct ContentView: View {
     @State private var screen: Screen = .welcome
     @State private var navDirection: NavDirection = .forward
 
-    // ✅ one shared store for the whole app
+    //  one shared store for the whole app
     @StateObject private var store = EpiLogStore()
 
     private var patientDisplayName: String {
