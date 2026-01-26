@@ -8,16 +8,22 @@
 import Foundation
 import SwiftUI
 
+//  TrackerViewModel.swift
+//  Seizure Tracker
+//
+//  Created by Martina Kolajová on 10.01.2026.
+//
+
+import Foundation
+import SwiftUI
+
 @MainActor
 final class TrackerViewModel: ObservableObject {
 
-    // 1) VM OWNS the store
+    // MARK: - Dependencies
     private let store: EpiLogStore
-    var hourlyCounts12: [Int] {
-        store.hourlyBins12(for: selectedDate)
-    }
 
-    // 2) VM exposes data the UI needs
+    // MARK: - UI State
     @Published var selectedDate: Date = Date()
     @Published var todayCount: Int = 0
     @Published var totalCount: Int = 0
@@ -34,35 +40,83 @@ final class TrackerViewModel: ObservableObject {
     @Published var injury: Bool = false
     @Published var note: String = ""
 
-
+    // MARK: - Init
     init(store: EpiLogStore) {
         self.store = store
         syncCounts()
+        syncVioletPhaseFromLatestEvent()
     }
 
-    // ✅ moved from TrackerLayout
+    // MARK: - Chart output (Counts + Frozen Colors)
+
+    /// Returns seizure counts per 12-hour bin AND frozen colors per bin
+    /// based on the latest logged seizure in that bin (latest wins).
+    func distribution12() -> (counts: [Int], perBinColors: [Color]) {
+        let (counts, latestPhase) = store.hourlyBins12WithLatestPhase(for: selectedDate)
+
+        let perBinColors: [Color] = latestPhase.map { phase in
+            let p = max(0, min(1, phase ?? 0))
+            let hue: Double = 0.78
+            let saturation = 0.35 + 0.50 * p
+            let brightness = 0.98 - 0.45 * p
+            return Color(hue: hue, saturation: saturation, brightness: brightness)
+        }
+
+        return (counts, perBinColors)
+    }
+
+    // MARK: - Counts
+
     func syncCounts() {
         todayCount = store.count(for: selectedDate)
         totalCount = store.totalCount()
     }
 
-    // ✅ moved from TrackerLayout
+    // MARK: - Seizure actions
+
     func logSeizure() {
-        store.addSeizure(onDay: selectedDate)
+        let phaseAtTap = violetPhase
+        store.addSeizure(onDay: selectedDate, tintPhase: phaseAtTap)
+
         withAnimation(.easeInOut(duration: 0.8)) {
             violetPhase = min(violetPhase + 0.08, 1.0)
         }
+
+        syncCounts()
+        // no need to syncVioletPhaseFromLatestEvent() here; we know we just logged one
+    }
+
+    func undoLast() {
+        _ = store.undoLastSeizure(onDay: selectedDate)
+
+        // ✅ keep violetPhase consistent with "latest logged wins"
+        withAnimation(.easeInOut(duration: 0.5)) {
+            syncVioletPhaseFromLatestEvent()
+        }
+
         syncCounts()
     }
 
-    // ✅ moved from TrackerLayout
-    func undoLast() {
-        _ = store.undoLastSeizure(onDay: selectedDate)
-        withAnimation(.easeInOut(duration: 0.5)) {
-            violetPhase = max(violetPhase - 0.06, 0.0)
+    // MARK: - Keep violetPhase in sync with data
+
+    private func syncVioletPhaseFromLatestEvent() {
+        let cal = Calendar.current
+        let key = cal.startOfDay(for: selectedDate)
+
+        if let last = store.seizures.last(where: { cal.startOfDay(for: $0.date) == key }) {
+            violetPhase = last.tintPhase
+        } else {
+            violetPhase = 0
         }
-        syncCounts()
     }
+
+    // If user changes selected date, call this from the View (you already call syncCounts)
+    func onSelectedDateChanged() {
+        syncCounts()
+        syncVioletPhaseFromLatestEvent()
+    }
+
+    // MARK: - Report
     func generateReportText() -> String {
         let p = store.patient
 
@@ -91,5 +145,4 @@ final class TrackerViewModel: ObservableObject {
 
         return lines.joined(separator: "\n")
     }
-
 }

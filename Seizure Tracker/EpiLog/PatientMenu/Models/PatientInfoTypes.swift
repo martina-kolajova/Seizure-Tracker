@@ -25,11 +25,11 @@ enum InfoSection: String, CaseIterable, Identifiable, Hashable {
     }
 }
 
-// ✅ Must be Codable because PatientProfile is Codable
+//  Must be Codable because PatientProfile is Codable
 enum HeightUnit: String, CaseIterable, Codable, Hashable { case cm, ftIn }
 enum WeightUnit: String, CaseIterable, Codable, Hashable { case kg, lb }
 
-// ✅ Central patient model (single source of truth)
+//  Central patient model (single source of truth)
 struct PatientProfile: Codable, Hashable {
 
     // Personal

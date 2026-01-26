@@ -11,60 +11,84 @@
 import Foundation
 import Combine
 
-/// Main application store holding patient data and seizure events.
-/// Handles state, business logic, and persistence.
-/// Views observe this object and react to state changes.
+
 @MainActor
 final class EpiLogStore: ObservableObject {
 
     // MARK: - Patient
-
-    /// Patient profile shared across the app.
-    /// Automatically persisted on change.
-    @Published var patient: PatientProfile = .init() {
-        didSet { savePatient() }
-    }
+    @Published var patient: PatientProfile = .init()
 
     // MARK: - Seizures
-
-    /// List of all recorded seizure events.
-    /// Automatically persisted on change.
-    @Published var seizures: [SeizureEvent] = [] {
-        didSet { saveSeizures() }
-    }
+    @Published var seizures: [SeizureEvent] = []
 
     // MARK: - Persistence Keys
-
-    /// UserDefaults keys for persisted data.
     private let patientKey  = "epilog.patient.v1"
     private let seizuresKey = "epilog.seizures.v1"
 
-    // MARK: - Init
+    private var cancellables = Set<AnyCancellable>()
+    private var isLoading = false
 
-    /// Loads persisted data on app launch.
     init() {
+        isLoading = true
         loadPatient()
         loadSeizures()
         seizures.sort { $0.date < $1.date }
+        isLoading = false
+
+        // Autosave (debounced)
+        $patient
+            .dropFirst()
+            .debounce(for: .milliseconds(400), scheduler: RunLoop.main)
+            .sink { [weak self] _ in self?.savePatientIfNeeded() }
+            .store(in: &cancellables)
+
+        $seizures
+            .dropFirst()
+            .debounce(for: .milliseconds(250), scheduler: RunLoop.main)
+            .sink { [weak self] _ in self?.saveSeizuresIfNeeded() }
+            .store(in: &cancellables)
     }
 
     // MARK: - Date Helpers
-
-    /// Returns a normalized start-of-day key for date-based grouping.
     func dayKey(_ date: Date) -> Date {
         Calendar.current.startOfDay(for: date)
     }
 
-    // MARK: - Seizure Actions (Global)
-
-    /// Adds a new seizure event with the current timestamp.
-    func addSeizure() {
-        seizures.append(SeizureEvent())
+    // MARK: - Actions
+    func addSeizure(tintPhase: Double) {
+        seizures.append(SeizureEvent(tintPhase: tintPhase))
         seizures.sort { $0.date < $1.date }
     }
 
-    /// Groups seizures into 12 hourly bins for a given day (used for charts).
-    func hourlyBins12(for day: Date) -> [Int] {
+    func addSeizure(onDay day: Date, tintPhase: Double) {
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: day)
+
+        let now = Date()
+        let time = cal.dateComponents([.hour, .minute, .second], from: now)
+        let ts = cal.date(byAdding: time, to: start) ?? start
+
+        seizures.append(SeizureEvent(date: ts, tintPhase: tintPhase))
+        seizures.sort { $0.date < $1.date }
+    }
+
+
+    @discardableResult
+    func undoLastSeizure(onDay day: Date) -> SeizureEvent? {
+        let key = dayKey(day)
+        guard let idx = seizures.lastIndex(where: { dayKey($0.date) == key }) else { return nil }
+        return seizures.remove(at: idx)
+    }
+
+    func count(for day: Date) -> Int {
+        let key = dayKey(day)
+        return seizures.reduce(0) { $0 + (dayKey($1.date) == key ? 1 : 0) }
+    }
+
+    func totalCount() -> Int { seizures.count }
+
+    
+    func hourlyBins24(for day: Date) -> [Int] {
         var bins = Array(repeating: 0, count: 12)
         let cal = Calendar.current
         let key = cal.startOfDay(for: day)
@@ -78,49 +102,28 @@ final class EpiLogStore: ObservableObject {
         }
         return bins
     }
+    func hourlyBins12WithLatestPhase(for day: Date) -> (counts: [Int], latestPhase: [Double?]) {
+        var counts = Array(repeating: 0, count: 12)
+        var latest = Array<Double?>(repeating: nil, count: 12)
 
-    // MARK: - Seizure Actions (Per Selected Day)
-
-    /// Adds a seizure to a selected day while keeping the current time-of-day.
-    func addSeizure(onDay day: Date) {
         let cal = Calendar.current
-        let start = cal.startOfDay(for: day)
+        let key = cal.startOfDay(for: day)
 
-        let now = Date()
-        let time = cal.dateComponents([.hour, .minute, .second], from: now)
-
-        let ts = cal.date(byAdding: time, to: start) ?? start
-        seizures.append(SeizureEvent(date: ts))
-        seizures.sort { $0.date < $1.date }
-    }
-
-    /// Removes the most recent seizure from the selected day, if any.
-    @discardableResult
-    func undoLastSeizure(onDay day: Date) -> SeizureEvent? {
-        let key = dayKey(day)
-        guard let idx = seizures.lastIndex(where: { dayKey($0.date) == key }) else {
-            return nil
+        // seizures are sorted by date in your store
+        for e in seizures where cal.startOfDay(for: e.date) == key {
+            let bin = cal.component(.hour, from: e.date) % 12
+            counts[bin] += 1
+            latest[bin] = e.tintPhase   // 
         }
-        return seizures.remove(at: idx)
+
+        return (counts, latest)
     }
 
-    // MARK: - Counts (UI Helpers)
-
-    /// Returns the number of seizures recorded on a given day.
-    func count(for day: Date) -> Int {
-        let key = dayKey(day)
-        return seizures.reduce(0) { $0 + (dayKey($1.date) == key ? 1 : 0) }
-    }
-
-    /// Returns the total number of recorded seizures.
-    func totalCount() -> Int {
-        seizures.count
-    }
-
-    // Persistence (Patient)
-
-    /// Saves patient data to UserDefaults.
-    private func savePatient() {
+    
+    
+    // MARK: - Persistence
+    private func savePatientIfNeeded() {
+        guard !isLoading else { return }
         do {
             let data = try JSONEncoder().encode(patient)
             UserDefaults.standard.set(data, forKey: patientKey)
@@ -129,7 +132,6 @@ final class EpiLogStore: ObservableObject {
         }
     }
 
-    /// Loads patient data from UserDefaults.
     private func loadPatient() {
         guard let data = UserDefaults.standard.data(forKey: patientKey) else { return }
         do {
@@ -139,10 +141,8 @@ final class EpiLogStore: ObservableObject {
         }
     }
 
-    // MARK: - Persistence (Seizures)
-
-    /// Saves seizure events to UserDefaults.
-    private func saveSeizures() {
+    private func saveSeizuresIfNeeded() {
+        guard !isLoading else { return }
         do {
             let data = try JSONEncoder().encode(seizures)
             UserDefaults.standard.set(data, forKey: seizuresKey)
@@ -151,7 +151,6 @@ final class EpiLogStore: ObservableObject {
         }
     }
 
-    /// Loads seizure events from UserDefaults.
     private func loadSeizures() {
         guard let data = UserDefaults.standard.data(forKey: seizuresKey) else { return }
         do {
@@ -164,15 +163,36 @@ final class EpiLogStore: ObservableObject {
 
 // MARK: - Model
 
-/// Basic seizure event model.
+
 struct SeizureEvent: Identifiable, Codable {
     let id: UUID
     let date: Date
+    let tintPhase: Double   // 0...1 captured at logging time
 
-    init(date: Date = Date()) {
+    init(date: Date = Date(), tintPhase: Double = 0) {
         self.id = UUID()
         self.date = date
+        self.tintPhase = tintPhase
+    }
+
+    // Backward-compatible decoding (older saves won't have tintPhase)
+    enum CodingKeys: String, CodingKey { case id, date, tintPhase }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try c.decode(UUID.self, forKey: .id)
+        self.date = try c.decode(Date.self, forKey: .date)
+        self.tintPhase = try c.decodeIfPresent(Double.self, forKey: .tintPhase) ?? 0
     }
 }
 
+//struct SeizureEvent: Identifiable, Codable {
+//    let id: UUID
+//    let date: Date
+//
+//    init(date: Date = Date()) {
+//        self.id = UUID()
+//        self.date = date
+//    }
+//}
 

@@ -90,7 +90,8 @@ struct TrackerLayout: View {
             vm.syncCounts()
         }
         .onChange(of: vm.selectedDate) { _ in
-            vm.syncCounts()
+            vm.onSelectedDateChanged()
+
         }
     }
 }

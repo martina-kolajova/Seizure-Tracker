@@ -5,21 +5,27 @@
 //  Created by Martina Kolajová on 03.01.2026.
 //
 
+
 import SwiftUI
 
 
 extension TrackerLayout {
 
     var distributionCard: some View {
-        let hourlyCounts = vm.hourlyCounts12  // ✅ from VM
 
         let colorCap = 6
 
-        let p = max(0, min(1, vm.violetPhase)) // ✅ from VM
-        let hue: Double = 0.78
-        let saturation = 0.35 + 0.50 * p
-        let brightness = 0.98 - 0.45 * p
-        let barColor = Color(hue: hue, saturation: saturation, brightness: brightness)
+        //  Current bin (0...11), where 0 == "12"
+        let hour24 = Calendar.current.component(.hour, from: Date())
+        let currentBin = hour24 % 12
+
+        //  Counts + frozen per-bin colors (latest logged wins) come from the VM
+        let out = vm.distribution12()
+        let hourlyCounts = out.counts
+        let perBinColors = out.perBinColors
+
+        //  Only current bin override color
+        let currentColor = Color.purple
 
         return VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
@@ -38,7 +44,10 @@ extension TrackerLayout {
                 DonutRadialBarRingWithClockLabels(
                     values: hourlyCounts,
                     maxValue: colorCap,
-                    barColor: barColor
+                    barColor: .white,           // fallback only
+                    currentColor: currentColor, // only current bin
+                    currentIndex: currentBin,
+                    perBinColors: perBinColors  //  frozen colors per bin
                 )
                 .frame(width: 220, height: 220)
                 Spacer()
