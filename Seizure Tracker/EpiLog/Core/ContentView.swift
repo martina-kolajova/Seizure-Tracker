@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    enum Screen { case welcome, patientInfo, tracker }
+    enum Screen { case welcome, home, patientInfo, tracker }
     enum NavDirection { case forward, backward }
 
     @State private var screen: Screen = .welcome
@@ -32,7 +32,16 @@ struct ContentView: View {
                 case .welcome:
                     WelcomeView(onStart: {
                         navDirection = .forward
-                        withAnimation(.easeInOut(duration: 0.5)) {
+                        withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
+                            screen = .home
+                        }
+                    })
+                    .transition(currentTransition)
+
+                case .home:
+                    HomeView(onContinue: {
+                        navDirection = .forward
+                        withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
                             screen = .patientInfo
                         }
                     })
@@ -43,13 +52,13 @@ struct ContentView: View {
                         store: store,
                         onBack: {
                             navDirection = .backward
-                            withAnimation(.easeInOut(duration: 0.5)) {
+                            withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
                                 screen = .welcome
                             }
                         },
                         onContinue: {
                             navDirection = .forward
-                            withAnimation(.easeInOut(duration: 0.5)) {
+                            withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
                                 screen = .tracker
                             }
                         }
@@ -61,7 +70,7 @@ struct ContentView: View {
                         patientName: patientDisplayName,
                         onBack: {
                             navDirection = .backward
-                            withAnimation(.easeInOut(duration: 0.5)) {
+                            withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
                                 screen = .patientInfo
                             }
                         }, 
@@ -70,21 +79,17 @@ struct ContentView: View {
                     .transition(currentTransition)
                 }
             }
+            .clipped()
         }
     }
 
     private var currentTransition: AnyTransition {
-        let insertionMove: AnyTransition = (navDirection == .forward)
-            ? .move(edge: .trailing)
-            : .move(edge: .leading)
-
-        let removalMove: AnyTransition = (navDirection == .forward)
-            ? .move(edge: .leading)
-            : .move(edge: .trailing)
-
+        let screenWidth: CGFloat = UIScreen.main.bounds.width
+        let insertX: CGFloat =  navDirection == .forward ?  screenWidth : -screenWidth
+        let removeX: CGFloat =  navDirection == .forward ? -screenWidth :  screenWidth
         return .asymmetric(
-            insertion: insertionMove.combined(with: .opacity),
-            removal: removalMove.combined(with: .opacity)
+            insertion: .offset(x: insertX),
+            removal:   .offset(x: removeX)
         )
     }
 }

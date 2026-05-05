@@ -8,14 +8,6 @@
 import Foundation
 import SwiftUI
 
-//  TrackerViewModel.swift
-//  Seizure Tracker
-//
-//  Created by Martina Kolajová on 10.01.2026.
-//
-
-import Foundation
-import SwiftUI
 
 @MainActor
 final class TrackerViewModel: ObservableObject {
@@ -89,7 +81,7 @@ final class TrackerViewModel: ObservableObject {
     func undoLast() {
         _ = store.undoLastSeizure(onDay: selectedDate)
 
-        // ✅ keep violetPhase consistent with "latest logged wins"
+        // keep violetPhase consistent with "latest logged wins"
         withAnimation(.easeInOut(duration: 0.5)) {
             syncVioletPhaseFromLatestEvent()
         }

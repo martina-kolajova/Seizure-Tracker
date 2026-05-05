@@ -12,9 +12,7 @@ struct PatientInfoMedicationView: View {
 
     var body: some View {
         ZStack {
-            MeshGradientView()
-                .overlay(Color.black.opacity(0.25))
-                .ignoresSafeArea()
+            MeshGradientView().ignoresSafeArea()
 
             ScrollView {
                 VStack(spacing: 20) {
