@@ -7,14 +7,17 @@
 import SwiftUI
 
 struct ContentView: View {
-    enum Screen { case welcome, home, patientInfo, tracker }
-    enum NavDirection { case forward, backward }
+    // top-level screen layered on top of the canvas
+    enum TopScreen { case none, tracker }
 
-    @State private var screen: Screen = .welcome
-    @State private var navDirection: NavDirection = .forward
+    @State private var slot: Int = 0          // 0 = welcome, 1 = home, 2 = patientInfo
+    @State private var dragOffset: CGFloat = 0
+    @State private var topScreen: TopScreen = .none
+    @State private var isDragging: Bool = false
 
-    //  one shared store for the whole app
     @StateObject private var store = EpiLogStore()
+
+    private let spring: Animation = .spring(response: 0.5, dampingFraction: 0.86)
 
     private var patientDisplayName: String {
         let first = store.patient.firstName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -25,77 +28,129 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            MeshGradientView()
+            // ── Truly fixed background — never moves ──────────────────────
+            MeshGradientView(frozen: isDragging).ignoresSafeArea()
 
-            ZStack {
-                switch screen {
-                case .welcome:
-                    WelcomeView(onStart: {
-                        navDirection = .forward
-                        withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
-                            screen = .home
+            GeometryReader { geo in
+                let w = geo.size.width
+                let h = geo.size.height
+                let canvasOffset = -CGFloat(slot) * h + dragOffset
+                let maxSlot = 5
+
+                ZStack {
+                    if topScreen == .none {
+                        VStack(spacing: 0) {
+                            // Slot 0 — Splash (EpiLog logo + tagline). Auto-advances.
+                            WelcomeView(onStart: {})
+                                .frame(width: w, height: h)
+
+                            // Slot 1 — Stat page 1 (50M / "You're not alone")
+                            WelcomeStatPage(
+                                bigStat: "50 million",
+                                bigStatCaption: "people worldwide live with epilepsy",
+                                title: "You're not alone.",
+                                bodyText: "Epilepsy is one of the most common neurological conditions in the world — affecting tens of millions of people across every country and culture.",
+                                pageIndex: 0,
+                                totalPages: 3
+                            )
+                            .frame(width: w, height: h)
+
+                            // Slot 2 — Stat page 2 (70% / Why tracking matters)
+                            WelcomeStatPage(
+                                bigStat: "70%",
+                                bigStatCaption: "could live seizure-free with the right treatment",
+                                title: "Why tracking matters",
+                                bodyText: "Neurologists rely on accurate seizure logs to decide whether to adjust medication. Around 50% of seizures go undocumented — often because of memory loss after the event. A consistent log gives your doctor what they need.",
+                                pageIndex: 1,
+                                totalPages: 3,
+                                backdropImageName: "phoneIcon"
+                            )
+                            .frame(width: w, height: h)
+
+                            // Slot 3 — Stat page 3 (Built for clarity)
+                            WelcomeStatPage(
+                                bigStat: "EpiLog",
+                                bigStatCaption: "your personal seizure diary",
+                                title: "Built for clarity",
+                                bodyText: "Log events in seconds. Track triggers, mood, sleep and medication. Spot patterns over time and share them with your clinician.",
+                                pageIndex: 2,
+                                totalPages: 3,
+                                backdropImageName: "phoneIcon"
+                            )
+                            .frame(width: w, height: h)
+
+                            // Slot 4 — Home (logo screen)
+                            HomeView(onContinue: {})
+                                .frame(width: w, height: h)
+
+                            // Slot 5 — Patient Info
+                            PatientInfoFlowView(
+                                store: store,
+                                onBack: { },
+                                onContinue: {
+                                    withAnimation(spring) { topScreen = .tracker }
+                                }
+                            )
+                            .frame(width: w, height: h)
                         }
-                    })
-                    .transition(currentTransition)
-
-                case .home:
-                    HomeView(onContinue: {
-                        navDirection = .forward
-                        withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
-                            screen = .patientInfo
+                        .offset(y: canvasOffset)
+                        .gesture(
+                            DragGesture()
+                                .onChanged { v in
+                                    isDragging = true
+                                    let drag = v.translation.height
+                                    // rubber-band at top and bottom
+                                    if (slot == 0 && drag > 0) || (slot == maxSlot && drag < 0) {
+                                        dragOffset = drag * 0.08
+                                    } else {
+                                        dragOffset = drag
+                                    }
+                                }
+                                .onEnded { v in
+                                    isDragging = false
+                                    let vel = v.predictedEndTranslation.height
+                                    let up   = v.translation.height < -60 || vel < -300
+                                    let down = v.translation.height >  60 || vel >  300
+                                    if up {
+                                        withAnimation(spring) {
+                                            slot = min(slot + 1, maxSlot)
+                                            dragOffset = 0
+                                        }
+                                    } else if down {
+                                        withAnimation(spring) {
+                                            slot = max(slot - 1, 0)
+                                            dragOffset = 0
+                                        }
+                                    } else {
+                                        withAnimation(spring) { dragOffset = 0 }
+                                    }
+                                }
+                        )
+                        .onAppear {
+                            // Auto-advance from splash to the first stat page
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {
+                                if slot == 0 { withAnimation(spring) { slot = 1 } }
+                            }
                         }
-                    })
-                    .transition(currentTransition)
+                    }
 
-                case .patientInfo:
-                    PatientInfoFlowView(
-                        store: store,
-                        onBack: {
-                            navDirection = .backward
-                            withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
-                                screen = .welcome
-                            }
-                        },
-                        onContinue: {
-                            navDirection = .forward
-                            withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
-                                screen = .tracker
-                            }
-                        }
-                    )
-                    .transition(currentTransition)
-
-                case .tracker:
-                    TrackerView(
-                        patientName: patientDisplayName,
-                        onBack: {
-                            navDirection = .backward
-                            withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
-                                screen = .patientInfo
-                            }
-                        }, 
-                        store: store
-                    )
-                    .transition(currentTransition)
+                    if topScreen == .tracker {
+                        TrackerView(
+                            patientName: patientDisplayName,
+                            onBack: { withAnimation(spring) { topScreen = .none } },
+                            store: store
+                        )
+                        .transition(.asymmetric(insertion: .offset(x: w), removal: .offset(x: w)))
+                        .zIndex(2)
+                    }
                 }
+                .clipped()
             }
-            .clipped()
         }
-    }
-
-    private var currentTransition: AnyTransition {
-        let screenWidth: CGFloat = UIScreen.main.bounds.width
-        let insertX: CGFloat =  navDirection == .forward ?  screenWidth : -screenWidth
-        let removeX: CGFloat =  navDirection == .forward ? -screenWidth :  screenWidth
-        return .asymmetric(
-            insertion: .offset(x: insertX),
-            removal:   .offset(x: removeX)
-        )
+        .ignoresSafeArea()
     }
 }
 
 #Preview {
     ContentView()
 }
-
-
