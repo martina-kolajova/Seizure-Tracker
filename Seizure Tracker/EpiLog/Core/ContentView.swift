@@ -35,10 +35,13 @@ struct ContentView: View {
                 let w = geo.size.width
                 let h = geo.size.height
                 let canvasOffset = -CGFloat(slot) * h + dragOffset
-                let maxSlot = 5
+                let maxSlot = 4
 
                 ZStack {
-                    if topScreen == .none {
+                    let trackerShown = (topScreen == .tracker)
+
+                    // The vertical canvas — slides LEFT off-screen when tracker is shown
+                    if topScreen == .none || trackerShown {
                         VStack(spacing: 0) {
                             // Slot 0 — Splash (EpiLog logo + tagline). Auto-advances.
                             WelcomeView(onStart: {})
@@ -79,11 +82,7 @@ struct ContentView: View {
                             )
                             .frame(width: w, height: h)
 
-                            // Slot 4 — Home (logo screen)
-                            HomeView(onContinue: {})
-                                .frame(width: w, height: h)
-
-                            // Slot 5 — Patient Info
+                            // Slot 4 — Patient Info
                             PatientInfoFlowView(
                                 store: store,
                                 onBack: { },
@@ -93,7 +92,7 @@ struct ContentView: View {
                             )
                             .frame(width: w, height: h)
                         }
-                        .offset(y: canvasOffset)
+                        .offset(x: trackerShown ? -w : 0, y: canvasOffset)
                         .gesture(
                             DragGesture()
                                 .onChanged { v in
@@ -134,13 +133,13 @@ struct ContentView: View {
                         }
                     }
 
-                    if topScreen == .tracker {
+                    if trackerShown {
                         TrackerView(
                             patientName: patientDisplayName,
                             onBack: { withAnimation(spring) { topScreen = .none } },
                             store: store
                         )
-                        .transition(.asymmetric(insertion: .offset(x: w), removal: .offset(x: w)))
+                        .transition(.move(edge: .trailing))
                         .zIndex(2)
                     }
                 }

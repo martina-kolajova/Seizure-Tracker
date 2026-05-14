@@ -23,9 +23,18 @@ struct TrackerLayout: View {
 
     var body: some View {
         ZStack {
-            MeshGradientView()
-                .ignoresSafeArea()
-                .overlay(Color.black.opacity(0.4).ignoresSafeArea())
+            // Counter-translated gradient — stays in the SAME screen coordinates as
+            // ContentView's outer gradient so when this view slides in horizontally,
+            // the background looks completely stationary (no seam, no page flip).
+            GeometryReader { geo in
+                let frame = geo.frame(in: .global)
+                MeshGradientView()
+                    .frame(width: UIScreen.main.bounds.width,
+                           height: UIScreen.main.bounds.height)
+                    .offset(x: -frame.minX, y: -frame.minY)
+            }
+            .ignoresSafeArea()
+            .overlay(Color.black.opacity(0.4).ignoresSafeArea())
 
             ScrollView {
                 VStack(spacing: 22) {

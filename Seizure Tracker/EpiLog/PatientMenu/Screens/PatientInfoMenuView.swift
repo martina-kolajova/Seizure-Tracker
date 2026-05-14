@@ -72,48 +72,67 @@ struct PatientInfoMenuView: View {
 
             bottomButton
         }
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture(minimumDistance: 25)
+                .onEnded { v in
+                    let dx = v.translation.width
+                    let dy = v.translation.height
+                    let vx = v.predictedEndTranslation.width
+                    // swipe left (or fast left flick) → tracker
+                    if abs(dx) > abs(dy) && (dx < -60 || vx < -300) {
+                        onContinue()
+                    }
+                }
+        )
     }
 
     private var topBar: some View {
-        HStack {
-            Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                               .font(.system(size: 17, weight: .semibold))
-                               .foregroundColor(.white)
-                               .padding(10)
-                               .background(.white.opacity(0.15), in: Circle())
-                       
-            }
-            Spacer()
-            Text("Set up patient profile")
-                .foregroundColor(.white)
-                .font(.headline)
-            Spacer()
-            Color.clear.frame(width: 60, height: 3)
-        }
-        .padding(.horizontal, 24)
-        .padding(.top, 40)
+        Text("Set up patient profile")
+            .foregroundColor(.white)
+            .font(.headline)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 24)
+            .padding(.top, 40)
     }
 
     private var bottomButton: some View {
-        HStack {
-            Spacer()
-            Button(action: onContinue) {
-                HStack(spacing: 8) {
-                    Text("Continue to tracker").font(.headline)
-                    Image(systemName: "arrow.right.circle.fill")
-                }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 10)
+        TrackerHint(onTap: onContinue)
+            .padding(.bottom, 40)
+    }
+}
+
+private struct TrackerHint: View {
+    let onTap: () -> Void
+    @State private var tick: Int = 0
+
+    private let chevronCount = 3
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text("Tracker")
+                .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
-                .background(.ultraThinMaterial, in: Capsule())
-                .overlay(Capsule().stroke(Color.white.opacity(0.3), lineWidth: 1))
+
+            // Stationary chevrons — sequential fade gives the illusion of running
+            HStack(spacing: 6) {
+                ForEach(0..<chevronCount, id: \.self) { i in
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.white)
+                        .opacity(tick == i ? 0.85 : 0.55)
+                }
             }
-            .buttonStyle(.plain)
-            .shadow(color: .black.opacity(0.4), radius: 12, y: 6)
-            Spacer()
         }
-        .padding(.bottom, 40)
+        .contentShape(Rectangle())
+        .onTapGesture { onTap() }
+        .onAppear {
+            Timer.scheduledTimer(withTimeInterval: 0.35, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.30)) {
+                    tick = (tick + 1) % chevronCount
+                }
+            }
+        }
     }
 }
 
