@@ -23,18 +23,9 @@ struct TrackerLayout: View {
 
     var body: some View {
         ZStack {
-            // Counter-translated gradient — stays in the SAME screen coordinates as
-            // ContentView's outer gradient so when this view slides in horizontally,
-            // the background looks completely stationary (no seam, no page flip).
-            GeometryReader { geo in
-                let frame = geo.frame(in: .global)
-                MeshGradientView()
-                    .frame(width: UIScreen.main.bounds.width,
-                           height: UIScreen.main.bounds.height)
-                    .offset(x: -frame.minX, y: -frame.minY)
-            }
-            .ignoresSafeArea()
-            .overlay(Color.black.opacity(0.4).ignoresSafeArea())
+            // Shared linear gradient — same as patient-info screens.
+            AppGradient()
+                .overlay(Color.black.opacity(0.25).ignoresSafeArea())
 
             ScrollView {
                 VStack(spacing: 22) {
@@ -44,8 +35,20 @@ struct TrackerLayout: View {
 
                     Group {
                         if vm.selectedTab == .tracker {
-                            GlassCard { distributionCard }
-                                .transition(.opacity.combined(with: .move(edge: .leading)))
+                            VStack(spacing: 16) {
+                                GlassCard { distributionCard }
+
+                                // Log button directly below the distribution
+                                VStack(spacing: 8) {
+                                    Text("Tap to log a seizure")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundColor(.white.opacity(0.85))
+
+                                    BigLogBar(onTap: { vm.logSeizure() })
+                                }
+                                .padding(.top, 4)
+                            }
+                            .transition(.opacity.combined(with: .move(edge: .leading)))
                         } else {
                             GlassCard {
                                 DailyStatus(
@@ -77,19 +80,7 @@ struct TrackerLayout: View {
         }
         .navigationBarHidden(true)
         .safeAreaInset(edge: .bottom) {
-            if vm.selectedTab == .tracker {
-                VStack(spacing: 6) {
-                    Text("Tap to log a seizure")
-                        .font(.caption.weight(.semibold))
-                        .foregroundColor(.white.opacity(0.80))
-
-                    BigLogBar(onTap: { vm.logSeizure() })
-                }
-                .padding(.horizontal, 14)
-                .padding(.bottom, 10)
-            } else {
-                Color.clear.frame(height: 60)
-            }
+            Color.clear.frame(height: 60)
         }
         .animation(
             .spring(response: 0.4, dampingFraction: 0.9),

@@ -12,8 +12,6 @@ struct PatientInfoMedicationView: View {
 
     var body: some View {
         ZStack {
-            MeshGradientView().ignoresSafeArea()
-
             ScrollView {
                 VStack(spacing: 20) {
 
@@ -99,13 +97,16 @@ struct PatientInfoMedicationView: View {
             }
             .scrollDisabled(!vm.suggestions.isEmpty)
         }
-        .navigationTitle("Medication")
-        .toolbarBackground(.visible, for: .navigationBar)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.dark, for: .navigationBar)
-        .tint(.white)
-        .onDisappear {
-            vm.save()
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Medication")
+                    .font(.system(size: 17, weight: .medium))
+                    .foregroundColor(.white)
+            }
         }
+        .onDisappear { vm.save() }
     }
 }
 

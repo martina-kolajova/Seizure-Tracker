@@ -15,8 +15,6 @@ struct PatientInfoDiagnosisView: View {
 
     var body: some View {
         ZStack {
-            MeshGradientView().ignoresSafeArea()
-
             ScrollView {
                 VStack(spacing: 20) {
 

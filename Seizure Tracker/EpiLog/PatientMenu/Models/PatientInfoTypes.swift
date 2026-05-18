@@ -18,9 +18,9 @@ enum InfoSection: String, CaseIterable, Identifiable, Hashable {
 
     var iconName: String {
         switch self {
-        case .personal:   return "heart.text.square"
+        case .personal:   return "person.text.rectangle"
         case .diagnosis:  return "waveform.path.ecg"
-        case .medication: return "pills.fill"
+        case .medication: return "pills"
         }
     }
 }

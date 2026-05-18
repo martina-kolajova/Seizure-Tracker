@@ -5,336 +5,180 @@
 //  Created by Martina Kolajová on 16.12.2025.
 //
 
-
 import SwiftUI
-
 
 struct PatientInfoPersonalView: View {
 
     @ObservedObject var vm: PatientPersonalViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    // MARK: - Body
 
     var body: some View {
-        ZStack {
-            MeshGradientView().ignoresSafeArea()
-
-            ScrollView {
-                VStack(spacing: 20) {
-
-                    VStack(alignment: .leading, spacing: 16) {
-
-                        labeledField("First name", placeholder: "e.g. Anna", text: $vm.firstName)
-                        labeledField("Last name", placeholder: "e.g. Novak", text: $vm.lastName)
-
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Basic info")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-
-                            HStack(spacing: 16) {
-                                miniNumberField("Age", placeholder: "27", text: $vm.ageText)
-
-                                miniNumberField(
-                                    "Height (\(vm.heightUnit == .cm ? "cm" : "ft/in"))",
-                                    placeholder: vm.heightUnit == .cm ? "165" : "5'7\"",
-                                    text: $vm.heightValue
-                                )
-
-                                miniNumberField(
-                                    "Weight (\(vm.weightUnit == .kg ? "kg" : "lb"))",
-                                    placeholder: vm.weightUnit == .kg ? "60" : "132",
-                                    text: $vm.weightValue
-                                )
-                            }
-
-                            HStack(spacing: 12) {
-                                Picker("Height", selection: $vm.heightUnit) {
-                                    ForEach(HeightUnit.allCases, id: \.self) { Text($0.rawValue) }
-                                }
-                                .pickerStyle(.segmented)
-
-                                Picker("Weight", selection: $vm.weightUnit) {
-                                    ForEach(WeightUnit.allCases, id: \.self) { Text($0.rawValue) }
-                                }
-                                .pickerStyle(.segmented)
-                            }
-                            .padding(.top, 6)
-                        }
-                    }
-                    .padding(18)
-                    .background(RoundedRectangle(cornerRadius: 20).fill(Color(.systemBackground).opacity(0.9)))
-                    .shadow(radius: 12, y: 6)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Additional notes")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-
-                        TextField("Family, work, living situation…", text: $vm.personalNotes, axis: .vertical)
-                            .lineLimit(3...6)
-                            .textFieldStyle(.plain)
-
-                        Divider()
-                    }
-                    .padding(18)
-                    .background(RoundedRectangle(cornerRadius: 20).fill(Color(.systemBackground).opacity(0.9)))
-                    .shadow(radius: 12, y: 6)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 24)
+        ScrollView {
+            VStack(spacing: 10) {
+                basicInfoCard
+                notesCard
+                Spacer(minLength: 40)
+            }
+            .padding(.top, 8)
+        }
+        .background(Color.clear)
+        .navigationBarBackButtonHidden(true)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarColorScheme(.dark, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Personal info")
+                    .font(.system(size: 17, weight: .medium))
+                    .foregroundColor(.white)
+            }
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button { dismiss() } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(width: 34, height: 34)
+                        .background(Color.purple.opacity(0.5), in: Circle())
                 }
             }
         }
-        .navigationTitle("Personal info")
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbarColorScheme(.dark, for: .navigationBar)
-        .tint(.white)
-        .onDisappear {
-            vm.save()
+        .onDisappear { vm.save() }
+    }
+
+    // MARK: - Card 1: basic info
+
+    private var basicInfoCard: some View {
+        VStack(spacing: 0) {
+            labeledField("First name", placeholder: "e.g. Anna", text: $vm.firstName)
+            divider
+            labeledField("Last name", placeholder: "e.g. Novak", text: $vm.lastName)
+
+            // Section title
+            HStack {
+                Text("Basic info")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(Color(hex: "#888888"))
+                Spacer()
+            }
+            .padding(.top, 12)
+
+            // 3-column row
+            HStack(spacing: 12) {
+                miniField(label: "Age",          text: $vm.ageText,      placeholder: "27")
+                miniField(label: heightLabel,    text: $vm.heightValue,  placeholder: vm.heightUnit == .cm ? "165" : "5'7\"")
+                miniField(label: weightLabel,    text: $vm.weightValue,  placeholder: vm.weightUnit == .kg ? "60" : "132")
+            }
+            .padding(.top, 6)
+
+            // Unit pill toggles
+            HStack(spacing: 8) {
+                unitPill("cm",   active: vm.heightUnit == .cm)   { vm.heightUnit = .cm }
+                unitPill("ft/in",active: vm.heightUnit == .ftIn) { vm.heightUnit = .ftIn }
+                Spacer().frame(width: 6)
+                unitPill("kg",   active: vm.weightUnit == .kg)   { vm.weightUnit = .kg }
+                unitPill("lb",   active: vm.weightUnit == .lb)   { vm.weightUnit = .lb }
+                Spacer()
+            }
+            .padding(.top, 10)
         }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.88))
+        )
+        .padding(.horizontal, 14)
+    }
+
+    private var heightLabel: String { "Height (\(vm.heightUnit == .cm ? "cm" : "ft/in"))" }
+    private var weightLabel: String { "Weight (\(vm.weightUnit == .kg ? "kg" : "lb"))" }
+
+    // MARK: - Card 2: notes
+
+    private var notesCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Additional notes")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(Color(hex: "#555555"))
+
+            ZStack(alignment: .topLeading) {
+                if vm.personalNotes.isEmpty {
+                    Text("Family, work, living situation…")
+                        .font(.system(size: 13))
+                        .foregroundColor(Color(hex: "#BBBBBB"))
+                        .padding(.top, 8)
+                        .padding(.leading, 4)
+                }
+                TextEditor(text: $vm.personalNotes)
+                    .font(.system(size: 13))
+                    .frame(minHeight: 90)
+                    .scrollContentBackground(.hidden)
+                    .background(Color.clear)
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.70))
+        )
+        .padding(.horizontal, 14)
+        .padding(.top, 10)
+    }
+
+    // MARK: - Reusable bits
+
+    private var divider: some View {
+        Rectangle()
+            .fill(Color.gray.opacity(0.25))
+            .frame(height: 0.5)
+            .padding(.vertical, 8)
     }
 
     @ViewBuilder
     private func labeledField(_ title: String, placeholder: String, text: Binding<String>) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.caption).foregroundColor(.secondary)
-            TextField(placeholder, text: text).textFieldStyle(.plain)
-            Divider()
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.system(size: 11))
+                .foregroundColor(Color(hex: "#888888"))
+            TextField(placeholder, text: text)
+                .font(.system(size: 14))
+                .foregroundColor(Color(hex: "#BBBBBB"))
+                .textFieldStyle(.plain)
         }
     }
 
     @ViewBuilder
-    private func miniNumberField(_ title: String, placeholder: String, text: Binding<String>) -> some View {
+    private func miniField(label: String, text: Binding<String>, placeholder: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(title).font(.caption2).foregroundColor(.secondary)
+            Text(label)
+                .font(.system(size: 11))
+                .foregroundColor(Color(hex: "#888888"))
             TextField(placeholder, text: text)
+                .font(.system(size: 14))
+                .foregroundColor(Color(hex: "#BBBBBB"))
                 .keyboardType(.numbersAndPunctuation)
                 .textFieldStyle(.plain)
-            Divider()
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func unitPill(_ label: String, active: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(label)
+                .font(.system(size: 12, weight: active ? .semibold : .regular))
+                .foregroundColor(active ? Color(hex: "#555555") : Color(hex: "#888888"))
+                .padding(.vertical, 4)
+                .padding(.horizontal, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(active ? Color.white : Color.clear)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(Color.gray.opacity(0.5), lineWidth: 0.5)
+                )
+        }
+        .buttonStyle(.plain)
     }
 }
-
-
-//struct PatientInfoPersonalView: View {
-//
-//    @ObservedObject var store: EpiLogStore
-//    @StateObject var vm: PatientPersonalViewModel
-//
-//    var body: some View {
-//        ZStack {
-//            MeshGradientView()
-//                .overlay(Color.black.opacity(0.25))
-//                .ignoresSafeArea()
-//
-//            ScrollView {
-//                VStack(spacing: 20) {
-//
-//                    VStack(alignment: .leading, spacing: 16) {
-//
-//                        labeledField("First name", placeholder: "e.g. Anna", text: $store.patient.firstName)
-//                        labeledField("Last name", placeholder: "e.g. Novak", text: $store.patient.lastName)
-//
-//                        VStack(alignment: .leading, spacing: 10) {
-//                            Text("Basic info")
-//                                .font(.caption)
-//                                .foregroundColor(.secondary)
-//
-//                            HStack(spacing: 16) {
-//                                miniNumberField("Age", placeholder: "27", text: $store.patient.ageText)
-//
-//                                miniNumberField(
-//                                    "Height (\(store.patient.heightUnit == .cm ? "cm" : "ft/in"))",
-//                                    placeholder: store.patient.heightUnit == .cm ? "165" : "5'7\"",
-//                                    text: $store.patient.heightValue
-//                                )
-//
-//                                miniNumberField(
-//                                    "Weight (\(store.patient.weightUnit == .kg ? "kg" : "lb"))",
-//                                    placeholder: store.patient.weightUnit == .kg ? "60" : "132",
-//                                    text: $store.patient.weightValue
-//                                )
-//                            }
-//
-//                            HStack(spacing: 12) {
-//                                Picker("Height", selection: $store.patient.heightUnit) {
-//                                    ForEach(HeightUnit.allCases, id: \.self) { Text($0.rawValue) }
-//                                }
-//                                .pickerStyle(.segmented)
-//
-//                                Picker("Weight", selection: $store.patient.weightUnit) {
-//                                    ForEach(WeightUnit.allCases, id: \.self) { Text($0.rawValue) }
-//                                }
-//                                .pickerStyle(.segmented)
-//                            }
-//                            .padding(.top, 6)
-//                        }
-//                    }
-//                    .padding(18)
-//                    .background(RoundedRectangle(cornerRadius: 20).fill(Color(.systemBackground).opacity(0.9)))
-//                    .shadow(radius: 12, y: 6)
-//                    .padding(.horizontal, 20)
-//                    .padding(.top, 16)
-//
-//                    VStack(alignment: .leading, spacing: 10) {
-//                        Text("Additional notes")
-//                            .font(.headline)
-//                            .foregroundColor(.secondary)
-//
-//                        TextField("Family, work, living situation…", text: $store.patient.personalNotes, axis: .vertical)
-//                            .lineLimit(3...6)
-//                            .textFieldStyle(.plain)
-//
-//                        Divider()
-//                    }
-//                    .padding(18)
-//                    .background(RoundedRectangle(cornerRadius: 20).fill(Color(.systemBackground).opacity(0.9)))
-//                    .shadow(radius: 12, y: 6)
-//                    .padding(.horizontal, 20)
-//                    .padding(.bottom, 24)
-//                }
-//            }
-//        }
-//        .navigationTitle("Personal info")
-//        .toolbarBackground(.visible, for: .navigationBar)
-//        .toolbarColorScheme(.dark, for: .navigationBar)
-//        .tint(.white)
-//    }
-//
-//    @ViewBuilder
-//    private func labeledField(_ title: String, placeholder: String, text: Binding<String>) -> some View {
-//        VStack(alignment: .leading, spacing: 6) {
-//            Text(title).font(.caption).foregroundColor(.secondary)
-//            TextField(placeholder, text: text).textFieldStyle(.plain)
-//            Divider()
-//        }
-//    }
-//
-//    @ViewBuilder
-//    private func miniNumberField(_ title: String, placeholder: String, text: Binding<String>) -> some View {
-//        VStack(alignment: .leading, spacing: 4) {
-//            Text(title).font(.caption2).foregroundColor(.secondary)
-//            TextField(placeholder, text: text)
-//                .keyboardType(.numbersAndPunctuation)
-//                .textFieldStyle(.plain)
-//            Divider()
-//        }
-//    }
-//}
-//
-////
-////
-////
-////struct PatientInfoPersonalView: View {
-////    @Binding var firstName: String
-////    @Binding var lastName: String
-////    @Binding var ageText: String
-////    @Binding var heightValue: String
-////    @Binding var weightValue: String
-////    @Binding var heightUnit: HeightUnit
-////    @Binding var weightUnit: WeightUnit
-////    @Binding var personalNotes: String
-////
-////    var body: some View {
-////        ZStack {
-////            MeshGradientView()
-////                .overlay(Color.black.opacity(0.25))
-////                .ignoresSafeArea()
-////
-////            ScrollView {
-////                VStack(spacing: 20) {
-////
-////                    VStack(alignment: .leading, spacing: 16) {
-////
-////                        labeledField("First name", placeholder: "e.g. Anna", text: $firstName)
-////                        labeledField("Last name", placeholder: "e.g. Novak", text: $lastName)
-////
-////                        VStack(alignment: .leading, spacing: 10) {
-////                            Text("Basic info")
-////                                .font(.caption)
-////                                .foregroundColor(.secondary)
-////
-////                            HStack(spacing: 16) {
-////                                miniNumberField("Age", placeholder: "27", text: $ageText)
-////
-////                                miniNumberField(
-////                                    "Height (\(heightUnit == .cm ? "cm" : "ft/in"))",
-////                                    placeholder: heightUnit == .cm ? "165" : "5'7\"",
-////                                    text: $heightValue
-////                                )
-////
-////                                miniNumberField(
-////                                    "Weight (\(weightUnit == .kg ? "kg" : "lb"))",
-////                                    placeholder: weightUnit == .kg ? "60" : "132",
-////                                    text: $weightValue
-////                                )
-////                            }
-////
-////                            // If you want unit pickers visible right here:
-////                            HStack(spacing: 12) {
-////                                Picker("Height", selection: $heightUnit) {
-////                                    ForEach(HeightUnit.allCases, id: \.self) { Text($0.rawValue) }
-////                                }
-////                                .pickerStyle(.segmented)
-////
-////                                Picker("Weight", selection: $weightUnit) {
-////                                    ForEach(WeightUnit.allCases, id: \.self) { Text($0.rawValue) }
-////                                }
-////                                .pickerStyle(.segmented)
-////                            }
-////                            .padding(.top, 6)
-////                        }
-////                    }
-////                    .padding(18)
-////                    .background(RoundedRectangle(cornerRadius: 20).fill(Color(.systemBackground).opacity(0.9)))
-////                    .shadow(radius: 12, y: 6)
-////                    .padding(.horizontal, 20)
-////                    .padding(.top, 16)
-////
-////                    VStack(alignment: .leading, spacing: 10) {
-////                        Text("Additional notes")
-////                            .font(.headline)
-////                            .foregroundColor(.secondary)
-////
-////                        TextField("Family, work, living situation…", text: $personalNotes, axis: .vertical)
-////                            .lineLimit(3...6)
-////                            .textFieldStyle(.plain)
-////
-////                        Divider()
-////                    }
-////                    .padding(18)
-////                    .background(RoundedRectangle(cornerRadius: 20).fill(Color(.systemBackground).opacity(0.9)))
-////                    .shadow(radius: 12, y: 6)
-////                    .padding(.horizontal, 20)
-////                    .padding(.bottom, 24)
-////                }
-////            }
-////        }
-////        .navigationTitle("Personal info")
-////        .toolbarBackground(.visible, for: .navigationBar)
-////        .toolbarColorScheme(.dark, for: .navigationBar)
-////        .tint(.white) 
-////      
-////    }
-////
-////    @ViewBuilder
-////    private func labeledField(_ title: String, placeholder: String, text: Binding<String>) -> some View {
-////        VStack(alignment: .leading, spacing: 6) {
-////            Text(title).font(.caption).foregroundColor(.secondary)
-////            TextField(placeholder, text: text).textFieldStyle(.plain)
-////            Divider()
-////        }
-////    }
-////
-////    @ViewBuilder
-////    private func miniNumberField(_ title: String, placeholder: String, text: Binding<String>) -> some View {
-////        VStack(alignment: .leading, spacing: 4) {
-////            Text(title).font(.caption2).foregroundColor(.secondary)
-////            TextField(placeholder, text: text)
-////                .keyboardType(.numbersAndPunctuation)
-////                .textFieldStyle(.plain)
-////            Divider()
-////        }
-////    }
-////}
-////

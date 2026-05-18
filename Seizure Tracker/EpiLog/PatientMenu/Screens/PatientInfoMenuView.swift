@@ -13,64 +13,32 @@ struct PatientInfoMenuView: View {
     let onContinue: () -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
-            topBar
+        GeometryReader { geo in
+            ZStack {
+                // ── Decorative concentric rings (behind buttons) ──
+                decorativeRings(in: geo)
 
-            HStack {
-                GeometryReader { geo in
-                    ZStack {
-                        let circleCenter = CGPoint(
-                            x: -geo.size.width * 0.10,
-                            y: geo.size.height * 0.5
-                        )
+                // ── Buttons arranged around the rings (right-facing arc) ──
+                radialButtons(in: geo)
 
-                        Image("logo-white")
-                            .resizable()
-                            .renderingMode(.template)
-                            .foregroundColor(.white.opacity(0.7))
-                            .scaledToFit()
-                            .frame(width: geo.size.height * 2)
-                            .position(circleCenter)
-                            .allowsHitTesting(false)
+                // ── Title at top, chevrons at bottom ──
+                VStack(spacing: 0) {
+                    Text("Set up patient profile")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.top, 80)
 
-                        let totalSections = InfoSection.allCases.count
-                        let radius = geo.size.height * 0.36
+                    Spacer()
 
-                        let startAngle = -60.0 * .pi / 180.0
-                        let endAngle   =  60.0 * .pi / 180.0
-                        let angleStep  = totalSections > 1
-                        ? (endAngle - startAngle) / Double(totalSections - 1)
-                        : 0
-
-                        let buttonOffsetX = geo.size.width * 0.22
-
-                        ForEach(Array(InfoSection.allCases.enumerated()), id: \.1) { index, section in
-                            let angle = startAngle + Double(index) * angleStep
-
-                            let baseX = circleCenter.x + cos(angle) * radius
-                            let baseY = circleCenter.y + sin(angle) * radius
-
-                            let x = baseX + buttonOffsetX
-                            let y = baseY
-
-                            NavigationLink(value: section) {
-                                PatientInfoSectionPill(section: section)
-                            }
-                            .buttonStyle(.plain)
-                            .position(x: x, y: y)
-                        }
-                    }
+                    Text("›  ›  ›")
+                        .font(.system(size: 22, weight: .medium))
+                        .foregroundColor(Color.white.opacity(0.45))
+                        .contentShape(Rectangle())
+                        .onTapGesture { onContinue() }
+                        .padding(.bottom, 40)
                 }
-                .frame(width: 260)
-
-                Spacer()
             }
-            .padding(.top, 10)
-            .padding(.leading, 8)
-
-            Spacer()
-
-            bottomButton
+            .frame(width: geo.size.width, height: geo.size.height)
         }
         .contentShape(Rectangle())
         .gesture(
@@ -79,7 +47,7 @@ struct PatientInfoMenuView: View {
                     let dx = v.translation.width
                     let dy = v.translation.height
                     let vx = v.predictedEndTranslation.width
-                    // swipe left (or fast left flick) → tracker
+                    // swipe left → tracker
                     if abs(dx) > abs(dy) && (dx < -60 || vx < -300) {
                         onContinue()
                     }
@@ -87,52 +55,47 @@ struct PatientInfoMenuView: View {
         )
     }
 
-    private var topBar: some View {
-        Text("Set up patient profile")
-            .foregroundColor(.white)
-            .font(.headline)
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 24)
-            .padding(.top, 40)
-    }
-
-    private var bottomButton: some View {
-        TrackerHint(onTap: onContinue)
-            .padding(.bottom, 40)
-    }
-}
-
-private struct TrackerHint: View {
-    let onTap: () -> Void
-    @State private var tick: Int = 0
-
-    private let chevronCount = 3
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Text("Tracker")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white)
-
-            // Stationary chevrons — sequential fade gives the illusion of running
-            HStack(spacing: 6) {
-                ForEach(0..<chevronCount, id: \.self) { i in
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(.white)
-                        .opacity(tick == i ? 0.85 : 0.55)
-                }
+    // MARK: - Decorative rings (behind buttons)
+    private func decorativeRings(in geo: GeometryProxy) -> some View {
+        ZStack {
+            ForEach([200.0, 280.0, 360.0, 440.0], id: \.self) { d in
+                Circle()
+                    .stroke(Color.white.opacity(0.25), lineWidth: 1.5)
+                    .frame(width: d, height: d)
             }
         }
-        .contentShape(Rectangle())
-        .onTapGesture { onTap() }
-        .onAppear {
-            Timer.scheduledTimer(withTimeInterval: 0.35, repeats: true) { _ in
-                withAnimation(.easeInOut(duration: 0.30)) {
-                    tick = (tick + 1) % chevronCount
+        .position(x: -20, y: geo.size.height * 0.55)
+        .allowsHitTesting(false)
+    }
+
+    // MARK: - Buttons arranged around the ring center
+    private func radialButtons(in geo: GeometryProxy) -> some View {
+        // Buttons orbit a point on the right side of the screen,
+        // away from the decorative ring center on the left.
+        let center = CGPoint(x: geo.size.width * 0.35, y: geo.size.height * 0.55)
+        let radius: CGFloat = 170
+
+        let sections = InfoSection.allCases
+        let count = sections.count
+        // Arc spanning from -55° (upper-right) to +55° (lower-right)
+        let startAngle = -55.0 * .pi / 180.0
+        let endAngle   =  55.0 * .pi / 180.0
+        let step = count > 1 ? (endAngle - startAngle) / Double(count - 1) : 0
+
+        return ZStack {
+            ForEach(Array(sections.enumerated()), id: \.element) { i, section in
+                let angle = startAngle + Double(i) * step
+                let x = center.x + cos(angle) * radius
+                let y = center.y + sin(angle) * radius
+
+                NavigationLink(value: section) {
+                    PatientInfoSectionPill(section: section)
                 }
+                .buttonStyle(.plain)
+                .position(x: x, y: y)
             }
         }
     }
 }
+
 

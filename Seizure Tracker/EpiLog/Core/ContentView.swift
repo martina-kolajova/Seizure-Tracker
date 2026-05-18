@@ -26,16 +26,30 @@ struct ContentView: View {
         return full.isEmpty ? "Patient" : full
     }
 
+    /// Mesh gradient is fully visible on slot 0 and fades out as the user
+    /// drags up onto slot 1. From slot 1 onward it stays hidden.
+    private var meshOpacity: Double {
+        if slot == 0 { return 1.0 }
+        return 0.0
+    }
+
     var body: some View {
         ZStack {
-            // ── Truly fixed background — never moves ──────────────────────
-            MeshGradientView(frozen: isDragging).ignoresSafeArea()
+            // ── Background layer ───────────────────────────────────────────
+            // Mesh gradient only during the welcome splash (slot 0).
+            // AppGradient is used everywhere else; both crossfade smoothly
+            // as the user swipes from slot 0 → slot 1.
+            AppGradient()
+            MeshGradientView(frozen: isDragging)
+                .ignoresSafeArea()
+                .opacity(meshOpacity)
+                .animation(spring, value: slot)
 
             GeometryReader { geo in
                 let w = geo.size.width
                 let h = geo.size.height
                 let canvasOffset = -CGFloat(slot) * h + dragOffset
-                let maxSlot = 4
+                let maxSlot = 3
 
                 ZStack {
                     let trackerShown = (topScreen == .tracker)
@@ -54,7 +68,7 @@ struct ContentView: View {
                                 title: "You're not alone.",
                                 bodyText: "Epilepsy is one of the most common neurological conditions in the world — affecting tens of millions of people across every country and culture.",
                                 pageIndex: 0,
-                                totalPages: 3
+                                totalPages: 2
                             )
                             .frame(width: w, height: h)
 
@@ -65,24 +79,12 @@ struct ContentView: View {
                                 title: "Why tracking matters",
                                 bodyText: "Neurologists rely on accurate seizure logs to decide whether to adjust medication. Around 50% of seizures go undocumented — often because of memory loss after the event. A consistent log gives your doctor what they need.",
                                 pageIndex: 1,
-                                totalPages: 3,
+                                totalPages: 2,
                                 backdropImageName: "phoneIcon"
                             )
                             .frame(width: w, height: h)
 
-                            // Slot 3 — Stat page 3 (Built for clarity)
-                            WelcomeStatPage(
-                                bigStat: "EpiLog",
-                                bigStatCaption: "your personal seizure diary",
-                                title: "Built for clarity",
-                                bodyText: "Log events in seconds. Track triggers, mood, sleep and medication. Spot patterns over time and share them with your clinician.",
-                                pageIndex: 2,
-                                totalPages: 3,
-                                backdropImageName: "phoneIcon"
-                            )
-                            .frame(width: w, height: h)
-
-                            // Slot 4 — Patient Info
+                            // Slot 3 — Patient Info
                             PatientInfoFlowView(
                                 store: store,
                                 onBack: { },

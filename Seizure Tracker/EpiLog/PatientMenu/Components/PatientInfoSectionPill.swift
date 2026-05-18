@@ -10,23 +10,19 @@ struct PatientInfoSectionPill: View {
     let section: InfoSection
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 12) {
             Image(systemName: section.iconName)
+                .font(.system(size: 20, weight: .medium))
+                .foregroundColor(.white)
             Text(section.rawValue)
-                .font(.subheadline)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.white)
                 .lineLimit(1)
         }
-        .foregroundStyle(.white)
-        .padding(.vertical, 10)
-        .padding(.horizontal, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color.white.opacity(0.18))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color.white.opacity(0.35), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.25), radius: 10, y: 6)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 26)
+        .background(Color.white.opacity(0.20), in: Capsule())
+        .overlay(Capsule().stroke(Color.white.opacity(0.3), lineWidth: 0.5))
+        .shadow(color: .black.opacity(0.20), radius: 10, y: 5)
     }
 }
