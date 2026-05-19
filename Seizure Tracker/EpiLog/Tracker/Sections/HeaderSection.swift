@@ -12,12 +12,17 @@ extension TrackerLayout {
     // MARK: - Header
     var header: some View {
         HStack {
-            Button(action: onBack) {
+            Button {
+                print("⬅️ Tracker back tapped")
+                onBack()
+            } label: {
                 Image(systemName: "chevron.left")
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
-                    .padding(10)
+                    .frame(width: 44, height: 44)
                     .background(.ultraThinMaterial, in: Circle())
                     .overlay(Circle().stroke(Color.white.opacity(0.25), lineWidth: 1))
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
 
