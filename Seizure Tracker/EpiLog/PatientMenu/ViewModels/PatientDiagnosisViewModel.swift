@@ -54,10 +54,10 @@ final class PatientDiagnosisViewModel: ObservableObject {
      }
 
      func pickSuggestion(_ s: ICDSuggestion) {
-         suppressNextSearch = true            //
-         diagnosisText = "\(s.code) – \(s.name)"
+         suppressNextSearch = true
+         diagnosisText = "\(s.name) (\(s.code))"
          suggestions = []
-         icdService.search(term: "")          // volitelné: okamžitě vyčisti service suggestions
+         icdService.search(term: "")
      }
     /// Persist changes to the shared store (called onDisappear).
     func save() {

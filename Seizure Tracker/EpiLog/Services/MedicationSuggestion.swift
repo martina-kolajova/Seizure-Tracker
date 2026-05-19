@@ -16,7 +16,7 @@ struct ICDSuggestion: Identifiable, Equatable {
 }
 
 /// NLM ClinicalTables ICD-10 API returns an ARRAY:
-/// [count, [codes], null, [[code, name], ...]]
+/// [count, [codes], extra_data_or_null, [[code, name], ...]]
 struct ICD10Response: Decodable, Equatable {
     let count: Int
     let suggestions: [ICDSuggestion]
@@ -25,23 +25,34 @@ struct ICD10Response: Decodable, Equatable {
         var c = try decoder.unkeyedContainer()
 
         // index 0: count
-        self.count = try c.decode(Int.self)
+        self.count = (try? c.decode(Int.self)) ?? 0
 
-        // index 1: codes (we don't need them for UI)
-        _ = try c.decode([String].self)
+        // index 1: codes — skip
+        _ = try? c.decode([String].self)
 
-        // index 2: null (legacy/unused) — ignore safely
-        _ = try c.decodeNil()
+        // index 2: extra data — can be null, dict, or array. Skip safely.
+        if (try? c.decodeNil()) == true {
+            // null — consumed
+        } else if (try? c.decode([String: [String]].self)) != nil {
+            // dict — consumed
+        } else if (try? c.decode([String].self)) != nil {
+            // array — consumed
+        } else {
+            _ = try? c.decode(EmptyDecodable.self)
+        }
 
-        // index 3: display rows [[code, name], ...]
-        let rows = try c.decode([[String]].self)
+        // index 3: display rows — may be [code, name] or just [code]
+        let rows = (try? c.decode([[String]].self)) ?? []
 
         self.suggestions = rows.compactMap { row in
-            guard row.count >= 2 else { return nil }
-            return ICDSuggestion(code: row[0], name: row[1])
+            guard let code = row.first else { return nil }
+            let name = row.count >= 2 ? row[1] : code
+            return ICDSuggestion(code: code, name: name)
         }
     }
 }
+
+private struct EmptyDecodable: Decodable {}
 
 @MainActor
 final class ICD10Service: ObservableObject {
@@ -51,8 +62,6 @@ final class ICD10Service: ObservableObject {
     private let session: URLSession
     private let decoder: JSONDecoder
     private let debounceNanos: UInt64
-
-    /// Used to ignore stale async responses (old term finishes after new one).
     private var latestTerm: String = ""
 
     init(
@@ -71,7 +80,6 @@ final class ICD10Service: ObservableObject {
         let trimmed = term.trimmingCharacters(in: .whitespacesAndNewlines)
         latestTerm = trimmed
 
-        // If short/empty, clear suggestions immediately and don't fetch
         guard trimmed.count >= 2 else {
             suggestions = []
             return
@@ -79,11 +87,8 @@ final class ICD10Service: ObservableObject {
 
         searchTask = Task { [weak self] in
             guard let self else { return }
-
-            // debounce
             try? await Task.sleep(nanoseconds: debounceNanos)
             guard !Task.isCancelled else { return }
-
             await self.fetch(term: trimmed)
         }
     }
@@ -91,29 +96,32 @@ final class ICD10Service: ObservableObject {
     private func fetch(term: String) async {
         var components = URLComponents(string: "https://clinicaltables.nlm.nih.gov/api/icd10cm/v3/search")!
         components.queryItems = [
-            URLQueryItem(name: "sf", value: "code,name"),
-            URLQueryItem(name: "terms", value: term)
+            URLQueryItem(name: "terms",   value: term),
+            URLQueryItem(name: "sf",      value: "code,name"),
+            URLQueryItem(name: "df",      value: "code,name"),   // ⬅️ CRITICAL: ensures rows are [code, name]
+            URLQueryItem(name: "maxList", value: "25")
         ]
 
         guard let url = components.url else { return }
 
         do {
-            let (data, _) = try await session.data(from: url)
-
-            // If user typed something else while we were waiting, ignore this response
+            let (data, response) = try await session.data(from: url)
             guard term == latestTerm else { return }
+
+            if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+                print("🟥 ICD10 HTTP \(http.statusCode) for \"\(term)\"")
+                suggestions = []
+                return
+            }
 
             let decoded = try decoder.decode(ICD10Response.self, from: data)
-
-            // Guard again in case decoding took time and term changed
             guard term == latestTerm else { return }
 
+            print("🟩 ICD10: \(decoded.suggestions.count) suggestions for \"\(term)\"")
             suggestions = decoded.suggestions
         } catch {
-            // If cancelled, do nothing special (common during typing)
             if let e = error as? URLError, e.code == .cancelled { return }
-
-            // Only clear if this request is still the latest
+            print("🟥 ICD10 error for \"\(term)\":", error.localizedDescription)
             guard term == latestTerm else { return }
             suggestions = []
         }

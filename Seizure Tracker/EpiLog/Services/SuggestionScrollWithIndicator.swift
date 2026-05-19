@@ -40,11 +40,11 @@ struct SuggestionScrollWithIndicator: View {
                     ForEach(items) { suggestion in
                         Button { onSelect(suggestion) } label: {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(suggestion.code)
+                                Text(suggestion.name)
                                     .font(.subheadline.weight(.semibold))
                                     .foregroundColor(.primary)
 
-                                Text(suggestion.name)
+                                Text(suggestion.code)
                                     .font(.footnote)
                                     .foregroundColor(.secondary)
                             }
