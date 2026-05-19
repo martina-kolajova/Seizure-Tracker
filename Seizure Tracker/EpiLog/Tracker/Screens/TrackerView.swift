@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 /// Entry point for the Tracker screen.
@@ -98,7 +97,11 @@ struct TrackerView: View {
 
                 /// Generated seizure report
                 case .report(let text):
-                    ReportView(text: text)
+                    ReportView(
+                        store: store,
+                        shareText: text,
+                        onClose: { sheetRoute = nil }
+                    )
                 }
             }
         }

@@ -23,10 +23,18 @@ struct PatientInfoMenuView: View {
 
                 // ── Title at top, chevrons at bottom ──
                 VStack(spacing: 0) {
-                    Text("Set up patient profile")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(.white)
-                        .padding(.top, 80)
+                    VStack(spacing: 4) {
+                        Text("SET UP")
+                            .font(.system(size: 18, weight: .medium))
+                            .tracking(4)
+                            .foregroundColor(.white.opacity(0.5))
+
+                        Text("Patient Profile")
+                            .font(.system(size: 32, weight: .bold))
+                            .foregroundColor(.white)
+                            .kerning(-0.5)
+                    }
+                    .padding(.top, 60)
 
                     Spacer()
 
@@ -99,3 +107,7 @@ struct PatientInfoMenuView: View {
 }
 
 
+#Preview {
+    PatientInfoMenuView(onBack: {}, onContinue: {})
+        .background(AppGradient())
+}
