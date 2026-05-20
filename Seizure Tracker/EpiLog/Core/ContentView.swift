@@ -7,10 +7,9 @@
 import SwiftUI
 
 struct ContentView: View {
-    // top-level screen layered on top of the canvas
     enum TopScreen { case none, tracker }
 
-    @State private var slot: Int = 0          // 0 = welcome, 1 = home, 2 = patientInfo
+    @State private var slot: Int = 0          // 0 splash, 1 stat1, 2 stat2, 3 patient info
     @State private var dragOffset: CGFloat = 0
     @State private var topScreen: TopScreen = .none
     @State private var isDragging: Bool = false
@@ -26,19 +25,11 @@ struct ContentView: View {
         return full.isEmpty ? "Patient" : full
     }
 
-    /// Mesh gradient is fully visible on slot 0 and fades out as the user
-    /// drags up onto slot 1. From slot 1 onward it stays hidden.
-    private var meshOpacity: Double {
-        if slot == 0 { return 1.0 }
-        return 0.0
-    }
+    private var meshOpacity: Double { slot == 0 ? 1.0 : 0.0 }
 
     var body: some View {
         ZStack {
-            // ── Background layer ───────────────────────────────────────────
-            // Mesh gradient only during the welcome splash (slot 0).
-            // AppGradient is used everywhere else; both crossfade smoothly
-            // as the user swipes from slot 0 → slot 1.
+            // ── Fixed background (never moves) ─────────────────────────────
             AppGradient()
             MeshGradientView(frozen: isDragging)
                 .ignoresSafeArea()
@@ -54,14 +45,13 @@ struct ContentView: View {
                 ZStack {
                     let trackerShown = (topScreen == .tracker)
 
-                    // The vertical canvas — slides LEFT off-screen when tracker is shown
                     if topScreen == .none || trackerShown {
                         VStack(spacing: 0) {
-                            // Slot 0 — Splash (EpiLog logo + tagline). Auto-advances.
+                            // Slot 0 — Splash
                             WelcomeView(onStart: {})
                                 .frame(width: w, height: h)
 
-                            // Slot 1 — Stat page 1 (50M / "You're not alone")
+                            // Slot 1 — Stat page 1
                             WelcomeStatPage(
                                 bigStat: "50 million",
                                 bigStatCaption: "people worldwide live with epilepsy",
@@ -72,7 +62,7 @@ struct ContentView: View {
                             )
                             .frame(width: w, height: h)
 
-                            // Slot 2 — Stat page 2 (70% / Why tracking matters)
+                            // Slot 2 — Stat page 2
                             WelcomeStatPage(
                                 bigStat: "70%",
                                 bigStatCaption: "could live seizure-free with the right treatment",
@@ -100,7 +90,6 @@ struct ContentView: View {
                                 .onChanged { v in
                                     isDragging = true
                                     let drag = v.translation.height
-                                    // rubber-band at top and bottom
                                     if (slot == 0 && drag > 0) || (slot == maxSlot && drag < 0) {
                                         dragOffset = drag * 0.08
                                     } else {
@@ -128,7 +117,6 @@ struct ContentView: View {
                                 }
                         )
                         .onAppear {
-                            // Auto-advance from splash to the first stat page
                             DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {
                                 if slot == 0 { withAnimation(spring) { slot = 1 } }
                             }
