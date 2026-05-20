@@ -5,7 +5,6 @@
 //  Created by Martina Kolajová on 16.12.2025.
 //
 
-
 import SwiftUI
 
 struct PatientInfoMenuView: View {
@@ -34,7 +33,7 @@ struct PatientInfoMenuView: View {
                             .foregroundColor(.white)
                             .kerning(-0.5)
                     }
-                    .padding(.top, 60)
+                    .padding(.top, 80)
 
                     Spacer()
 
@@ -68,7 +67,7 @@ struct PatientInfoMenuView: View {
         ZStack {
             ForEach([200.0, 280.0, 360.0, 440.0], id: \.self) { d in
                 Circle()
-                    .stroke(Color.white.opacity(0.25), lineWidth: 1.5)
+                    .stroke(Color.white.opacity(0.25), lineWidth: 1.8)
                     .frame(width: d, height: d)
             }
         }
@@ -78,14 +77,11 @@ struct PatientInfoMenuView: View {
 
     // MARK: - Buttons arranged around the ring center
     private func radialButtons(in geo: GeometryProxy) -> some View {
-        // Buttons orbit a point on the right side of the screen,
-        // away from the decorative ring center on the left.
         let center = CGPoint(x: geo.size.width * 0.35, y: geo.size.height * 0.55)
         let radius: CGFloat = 170
 
         let sections = InfoSection.allCases
         let count = sections.count
-        // Arc spanning from -55° (upper-right) to +55° (lower-right)
         let startAngle = -55.0 * .pi / 180.0
         let endAngle   =  55.0 * .pi / 180.0
         let step = count > 1 ? (endAngle - startAngle) / Double(count - 1) : 0
@@ -106,8 +102,7 @@ struct PatientInfoMenuView: View {
     }
 }
 
-
 #Preview {
     PatientInfoMenuView(onBack: {}, onContinue: {})
-        .background(AppGradient())
+    
 }
