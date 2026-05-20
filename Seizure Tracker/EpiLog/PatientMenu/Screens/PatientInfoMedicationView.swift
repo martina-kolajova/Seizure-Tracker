@@ -73,16 +73,22 @@ struct PatientInfoMedicationView: View {
                                     if let b = s.brandName, !b.isEmpty { parts.append("brand: \(b)") }
                                     let subtitle = parts.isEmpty ? " " : parts.joined(separator: " • ")
 
-                                    return ICDSuggestion(code: title, name: subtitle)
+                                    // name = bold top line (medication name)
+                                    // code = faded bottom line (generic / brand details)
+                                    return ICDSuggestion(code: subtitle, name: title)
                                 },
                                 height: 260
                             ) { picked in
-                                // pickSuggestion expects DrugSuggestion; easiest is: choose by displayName match
-                                if let match = vm.suggestions.first(where: { $0.displayName == picked.code }) {
+                                // picked.code is now the subtitle; match by name (med title)
+                                if let match = vm.suggestions.first(where: {
+                                    let brand = $0.brandName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                                    let generic = $0.genericName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                                    let title = !brand.isEmpty ? brand : (!generic.isEmpty ? generic : $0.displayName)
+                                    return title == picked.name
+                                }) {
                                     vm.pickSuggestion(match)
                                 } else {
-                                    // fallback: just set text to picked code
-                                    vm.medicationText = picked.code
+                                    vm.medicationText = picked.name
                                     vm.suggestions = []
                                 }
                             }
@@ -109,4 +115,3 @@ struct PatientInfoMedicationView: View {
         .onDisappear { vm.save() }
     }
 }
-
