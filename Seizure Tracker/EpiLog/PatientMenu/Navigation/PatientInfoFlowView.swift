@@ -7,6 +7,27 @@
 
 import SwiftUI
 
+/// Renders `AppGradient` locked to screen coordinates regardless of where
+/// this view is offset. That way slot 3's background is pixel-identical to
+/// slots 1 & 2 (the root `AppGradient` in ContentView) — no seam during the
+/// vertical swipe, and the NavigationStack never flashes white.
+private struct PinnedAppGradient: View {
+    var body: some View {
+        GeometryReader { geo in
+            let frame = geo.frame(in: .global)
+            // The slot's container is the full screen, so geo.size equals the
+            // screen size. Sizing the gradient to geo.size and counter-translating
+            // by the slot's global origin pins it to the same on-screen rect as
+            // ContentView's root AppGradient → pixel-identical, no seam.
+            AppGradient()
+                .frame(width: geo.size.width, height: geo.size.height)
+                .offset(x: -frame.minX, y: -frame.minY)
+                .allowsHitTesting(false)
+        }
+        .ignoresSafeArea()
+    }
+}
+
 struct PatientInfoFlowView: View {
     let onBack: () -> Void
     let onContinue: () -> Void
@@ -22,12 +43,13 @@ struct PatientInfoFlowView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                AppGradient()       // shared purple → blue gradient (Screen 1 & Screen 2)
+                PinnedAppGradient()                       // matches slots 1 & 2
                 PatientInfoMenuView(onBack: onBack, onContinue: onContinue)
             }
+            .toolbarBackground(.hidden, for: .navigationBar)
             .navigationDestination(for: InfoSection.self) { section in
                 ZStack {
-                    AppGradient()
+                    AppGradient().ignoresSafeArea()
                     switch section {
                     case .personal:
                         PatientInfoPersonalView(vm: vm.makePersonalVM())
@@ -37,8 +59,10 @@ struct PatientInfoFlowView: View {
                         PatientInfoMedicationView(vm: vm.makeMedicationVM())
                     }
                 }
+                .toolbarBackground(.hidden, for: .navigationBar)
             }
         }
+        .background(AppGradient().ignoresSafeArea())
     }
 }
 
