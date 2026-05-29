@@ -15,10 +15,6 @@ extension TrackerLayout {
 
         let colorCap = 6
 
-        //  Current bin (0...11), where 0 == "12"
-        let hour24 = Calendar.current.component(.hour, from: Date())
-        let currentBin = hour24 % 12
-
         //  Counts + frozen per-bin colors (latest logged wins) come from the VM
         let out = vm.distribution12()
         let hourlyCounts = out.counts
@@ -46,7 +42,7 @@ extension TrackerLayout {
                     maxValue: colorCap,
                     barColor: .white,           // fallback only
                     currentColor: currentColor, // only current bin
-                    currentIndex: currentBin,
+                    currentIndex: vm.currentHourBin,
                     perBinColors: perBinColors  //  frozen colors per bin
                 )
                 .frame(width: 220, height: 220)

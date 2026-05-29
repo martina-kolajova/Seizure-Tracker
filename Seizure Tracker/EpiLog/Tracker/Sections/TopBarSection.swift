@@ -26,9 +26,7 @@ extension TrackerLayout {
         let isOn = (vm.selectedTab == tab)
 
         return Button {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.92)) {
-                vm.selectedTab = tab
-            }
+            vm.selectTab(tab)
         } label: {
             Text(tab.rawValue)
                 .font(.subheadline.weight(.semibold))

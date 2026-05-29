@@ -13,7 +13,6 @@ extension TrackerLayout {
     var header: some View {
         HStack {
             Button {
-                print("⬅️ Tracker back tapped")
                 onBack()
             } label: {
                 Image(systemName: "chevron.left")
