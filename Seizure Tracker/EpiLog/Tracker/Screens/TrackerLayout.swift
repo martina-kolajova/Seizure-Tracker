@@ -15,12 +15,8 @@ struct TrackerLayout: View {
     
     let patientName: String
     let onBack: () -> Void
-    let onGenerateReport: () -> Void
     
     
-    @State private var showTodayDetails: Bool = true
-
-
     var body: some View {
         ZStack {
             // Shared linear gradient — same as patient-info screens.
@@ -62,7 +58,7 @@ struct TrackerLayout: View {
                                     injury: $vm.injury,
                                     note: $vm.note,
                                     onUndoLast: { vm.undoLast() },
-                                    onGenerateReport: onGenerateReport
+                                    onGenerateReport: { vm.openReport() }
                                 )
                             }
                             .transition(.opacity.combined(with: .move(edge: .trailing)))
@@ -104,7 +100,6 @@ struct TrackerLayout: View {
     return TrackerLayout(
         vm: vm,
         patientName: "Anna Novakova",
-        onBack: {},
-        onGenerateReport: {}
+        onBack: {}
     )
 }

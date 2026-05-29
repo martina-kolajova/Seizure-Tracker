@@ -12,6 +12,24 @@ import SwiftUI
 @MainActor
 final class TrackerViewModel: ObservableObject {
 
+    // MARK: - Sheet routing (navigation domain)
+    enum ProfileTab: String, Identifiable {
+        case personal, diagnosis, medication
+        var id: String { rawValue }
+    }
+
+    enum SheetRoute: Identifiable {
+        case profile(ProfileTab)
+        case report(String)
+
+        var id: String {
+            switch self {
+            case .profile(let tab): return "profile-\(tab.rawValue)"
+            case .report:           return "report"
+            }
+        }
+    }
+
     // MARK: - Dependencies
     private let store: EpiLogStore
 
@@ -32,6 +50,9 @@ final class TrackerViewModel: ObservableObject {
     @Published var injury: Bool = false
     @Published var note: String = ""
 
+    /// Active sheet (nil = none). Bind this in the view via `$vm.sheetRoute`.
+    @Published var sheetRoute: SheetRoute?
+
     // MARK: - Init
     init(store: EpiLogStore) {
         self.store = store
@@ -39,7 +60,12 @@ final class TrackerViewModel: ObservableObject {
         syncVioletPhaseFromLatestEvent()
     }
 
-    // MARK: - Chart output (Counts + Frozen Colors)
+    // MARK: - Derived presentation values
+
+    /// Current 12-hour bin index (0–11) for highlighting the "now" slice on the donut.
+    var currentHourBin: Int {
+        Calendar.current.component(.hour, from: Date()) % 12
+    }
 
     /// Returns seizure counts per 12-hour bin AND frozen colors per bin
     /// based on the latest logged seizure in that bin (latest wins).
@@ -62,6 +88,13 @@ final class TrackerViewModel: ObservableObject {
     func syncCounts() {
         todayCount = store.count(for: selectedDate)
         totalCount = store.totalCount()
+    }
+
+    // MARK: - Tab selection
+    func selectTab(_ tab: TopTab) {
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.92)) {
+            selectedTab = tab
+        }
     }
 
     // MARK: - Seizure actions
@@ -106,6 +139,19 @@ final class TrackerViewModel: ObservableObject {
     func onSelectedDateChanged() {
         syncCounts()
         syncVioletPhaseFromLatestEvent()
+    }
+
+    // MARK: - Navigation actions
+    func openProfile(_ tab: ProfileTab = .personal) {
+        sheetRoute = .profile(tab)
+    }
+
+    func openReport() {
+        sheetRoute = .report(generateReportText())
+    }
+
+    func closeSheet() {
+        sheetRoute = nil
     }
 
     // MARK: - Report
