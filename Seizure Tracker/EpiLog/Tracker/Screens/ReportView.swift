@@ -2,66 +2,21 @@
 //  ReportView.swift
 //  Seizure Tracker
 //
-//  Modern dashboard-style report with weekly stats.
+//  Pure layout. All stats/formatting live in ReportViewModel.
 //
 
 import SwiftUI
 import Charts
 
 struct ReportView: View {
-    @ObservedObject var store: EpiLogStore
-    let shareText: String
-    var onClose: () -> Void = {}
+    @StateObject private var vm: ReportViewModel
+    var onClose: () -> Void
 
-    // MARK: - Derived stats
-    private var totalCount: Int { store.seizures.count }
-
-    private var last7DaysCounts: [DayCount] {
-        let cal = Calendar.current
-        let today = cal.startOfDay(for: Date())
-        return (0..<7).reversed().map { offset in
-            let day = cal.date(byAdding: .day, value: -offset, to: today) ?? today
-            let count = store.count(for: day)
-            return DayCount(date: day, count: count)
-        }
+    init(store: EpiLogStore, shareText: String, onClose: @escaping () -> Void = {}) {
+        _vm = StateObject(wrappedValue: ReportViewModel(store: store, shareText: shareText))
+        self.onClose = onClose
     }
 
-    private var last30DaysCounts: [DayCount] {
-        let cal = Calendar.current
-        let today = cal.startOfDay(for: Date())
-        return (0..<30).reversed().map { offset in
-            let day = cal.date(byAdding: .day, value: -offset, to: today) ?? today
-            return DayCount(date: day, count: store.count(for: day))
-        }
-    }
-
-    private var weekTotal: Int { last7DaysCounts.reduce(0) { $0 + $1.count } }
-    private var monthTotal: Int { last30DaysCounts.reduce(0) { $0 + $1.count } }
-    private var weeklyAverage: Double {
-        guard !last7DaysCounts.isEmpty else { return 0 }
-        return Double(weekTotal) / 7.0
-    }
-    private var daysSeizureFreeThisWeek: Int {
-        last7DaysCounts.filter { $0.count == 0 }.count
-    }
-
-    private var hourBuckets: [HourBucket] {
-        // 4-hour buckets across the entire dataset
-        var counts = Array(repeating: 0, count: 6) // 0-3, 4-7, 8-11, 12-15, 16-19, 20-23
-        let cal = Calendar.current
-        for ev in store.seizures {
-            let h = cal.component(.hour, from: ev.date)
-            counts[h / 4] += 1
-        }
-        let labels = ["0-3", "4-7", "8-11", "12-15", "16-19", "20-23"]
-        return zip(labels, counts).map { HourBucket(label: $0.0, count: $0.1) }
-    }
-
-    private var recentEvents: [SeizureEvent] {
-        Array(store.seizures.suffix(8).reversed())
-    }
-
-    // MARK: - Body
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -90,7 +45,7 @@ struct ReportView: View {
                     Button("Close") { onClose() }
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    ShareLink(item: shareText) {
+                    ShareLink(item: vm.shareText) {
                         Image(systemName: "square.and.arrow.up")
                     }
                 }
@@ -100,21 +55,18 @@ struct ReportView: View {
 
     // MARK: - Header
     private var headerCard: some View {
-        let p = store.patient
-        let name = "\(p.firstName) \(p.lastName)".trimmingCharacters(in: .whitespaces)
-        let (diagnosisName, icdCode) = splitDiagnosis(p.diagnosisText)
-        return VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 8) {
             Text("PATIENT")
                 .font(.system(size: 10, weight: .semibold))
                 .tracking(2)
                 .foregroundColor(.white.opacity(0.75))
-            Text(name.isEmpty ? "—" : name)
+            Text(vm.patientName)
                 .font(.system(size: 24, weight: .bold))
                 .foregroundColor(.white)
 
             HStack(spacing: 8) {
                 Image(systemName: "waveform.path.ecg")
-                if let code = icdCode {
+                if let code = vm.diagnosisCode {
                     Text(code)
                         .font(.system(size: 13, weight: .bold, design: .monospaced))
                         .padding(.horizontal, 10).padding(.vertical, 4)
@@ -130,7 +82,7 @@ struct ReportView: View {
             .padding(.top, 4)
 
             HStack {
-                Label("\(totalCount) total seizures", systemImage: "sum")
+                Label("\(vm.totalCount) total seizures", systemImage: "sum")
                 Spacer()
             }
             .font(.system(size: 12, weight: .medium))
@@ -148,46 +100,28 @@ struct ReportView: View {
         .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 4)
     }
 
-    /// Parses "Epilepsy, unspecified (G40.909)" → ("Epilepsy, unspecified", "G40.909").
-    /// If no trailing parenthesized code is found, returns (text, nil).
-    private func splitDiagnosis(_ text: String) -> (name: String, code: String?) {
-        let trimmed = text.trimmingCharacters(in: .whitespaces)
-        guard trimmed.hasSuffix(")"),
-              let open = trimmed.lastIndex(of: "(")
-        else { return (trimmed, nil) }
-        let code = String(trimmed[trimmed.index(after: open)..<trimmed.index(before: trimmed.endIndex)])
-        let name = String(trimmed[..<open]).trimmingCharacters(in: .whitespaces)
-        return (name, code.isEmpty ? nil : code)
-    }
-
     // MARK: - KPI Row
     private var kpiRow: some View {
         HStack(spacing: 12) {
-            KPICard(
-                value: "\(weekTotal)",
-                label: "This week",
-                icon: "calendar",
-                tint: Color(hex: "#A855F7")
-            )
-            KPICard(
-                value: String(format: "%.1f", weeklyAverage),
-                label: "Daily avg",
-                icon: "chart.bar.fill",
-                tint: Color(hex: "#3B82F6")
-            )
-            KPICard(
-                value: "\(daysSeizureFreeThisWeek)",
-                label: "Seizure-free",
-                icon: "checkmark.seal.fill",
-                tint: Color(hex: "#10B981")
-            )
+            KPICard(value: "\(vm.weekTotal)",
+                    label: "This week",
+                    icon: "calendar",
+                    tint: Color(hex: "#A855F7"))
+            KPICard(value: vm.weeklyAverageDisplay,
+                    label: "Daily avg",
+                    icon: "chart.bar.fill",
+                    tint: Color(hex: "#3B82F6"))
+            KPICard(value: "\(vm.daysSeizureFreeThisWeek)",
+                    label: "Seizure-free",
+                    icon: "checkmark.seal.fill",
+                    tint: Color(hex: "#10B981"))
         }
     }
 
     // MARK: - Weekly chart
     private var weeklyChartCard: some View {
         DashboardCard(title: "Last 7 days", subtitle: "Seizures per day") {
-            Chart(last7DaysCounts) { item in
+            Chart(vm.last7DaysCounts) { item in
                 BarMark(
                     x: .value("Day", item.date, unit: .day),
                     y: .value("Count", item.count),
@@ -202,7 +136,7 @@ struct ReportView: View {
                 .cornerRadius(6)
             }
             .chartXAxis {
-                AxisMarks(values: .stride(by: .day)) { value in
+                AxisMarks(values: .stride(by: .day)) { _ in
                     AxisValueLabel(format: .dateTime.weekday(.narrow))
                         .font(.system(size: 11, weight: .medium))
                 }
@@ -220,7 +154,7 @@ struct ReportView: View {
     // MARK: - Hour distribution
     private var hourChartCard: some View {
         DashboardCard(title: "Time of day", subtitle: "All-time distribution") {
-            Chart(hourBuckets) { bucket in
+            Chart(vm.hourBuckets) { bucket in
                 BarMark(
                     x: .value("Hour", bucket.label),
                     y: .value("Count", bucket.count),
@@ -244,10 +178,10 @@ struct ReportView: View {
         }
     }
 
-    // MARK: - 30-day trend (area)
+    // MARK: - 30-day trend
     private var trendCard: some View {
-        DashboardCard(title: "30-day trend", subtitle: "\(monthTotal) total this month") {
-            Chart(last30DaysCounts) { item in
+        DashboardCard(title: "30-day trend", subtitle: "\(vm.monthTotal) total this month") {
+            Chart(vm.last30DaysCounts) { item in
                 AreaMark(
                     x: .value("Day", item.date),
                     y: .value("Count", item.count)
@@ -288,8 +222,8 @@ struct ReportView: View {
 
     // MARK: - Recent events
     private var recentCard: some View {
-        DashboardCard(title: "Recent events", subtitle: "Last \(recentEvents.count) entries") {
-            if recentEvents.isEmpty {
+        DashboardCard(title: "Recent events", subtitle: "Last \(vm.recentEvents.count) entries") {
+            if vm.recentEvents.isEmpty {
                 Text("No seizures logged yet.")
                     .font(.system(size: 13))
                     .foregroundColor(.secondary)
@@ -297,9 +231,9 @@ struct ReportView: View {
                     .padding(.vertical, 8)
             } else {
                 VStack(spacing: 0) {
-                    ForEach(Array(recentEvents.enumerated()), id: \.element.id) { idx, ev in
+                    ForEach(Array(vm.recentEvents.enumerated()), id: \.element.id) { idx, ev in
                         EventRow(event: ev)
-                        if idx < recentEvents.count - 1 {
+                        if idx < vm.recentEvents.count - 1 {
                             Divider().padding(.leading, 36)
                         }
                     }
@@ -309,20 +243,8 @@ struct ReportView: View {
     }
 }
 
-// MARK: - Supporting models
-private struct DayCount: Identifiable {
-    let id = UUID()
-    let date: Date
-    let count: Int
-}
+// MARK: - Reusable view atoms (pure presentation)
 
-private struct HourBucket: Identifiable {
-    let id = UUID()
-    let label: String
-    let count: Int
-}
-
-// MARK: - Reusable card
 private struct DashboardCard<Content: View>: View {
     let title: String
     let subtitle: String?
