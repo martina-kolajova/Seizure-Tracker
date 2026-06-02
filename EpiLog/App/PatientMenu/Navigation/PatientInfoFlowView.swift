@@ -32,12 +32,12 @@ struct PatientInfoFlowView: View {
     let onBack: () -> Void
     let onContinue: () -> Void
 
-    @StateObject private var vm: PatientInfoFlowViewModel
+    @StateObject private var vm: PatientInfoCoordinatorViewModel
 
     init(store: EpiLogStore, onBack: @escaping () -> Void, onContinue: @escaping () -> Void) {
         self.onBack = onBack
         self.onContinue = onContinue
-        _vm = StateObject(wrappedValue: PatientInfoFlowViewModel(store: store))
+        _vm = StateObject(wrappedValue: PatientInfoCoordinatorViewModel(store: store))
     }
 
     var body: some View {
