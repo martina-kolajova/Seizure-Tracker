@@ -35,19 +35,19 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		2A4276042EDE683500174316 /* Seizure Tracker */ = {
+		2A4276042EDE683500174316 /* EpiLog */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Seizure Tracker";
+			path = EpiLog;
 			sourceTree = "<group>";
 		};
-		2A4276122EDE683700174316 /* Seizure TrackerTests */ = {
+		2A4276122EDE683700174316 /* EpiLogTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Seizure TrackerTests";
+			path = EpiLogTests;
 			sourceTree = "<group>";
 		};
-		2A42761C2EDE683700174316 /* Seizure TrackerUITests */ = {
+		2A42761C2EDE683700174316 /* EpiLogUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Seizure TrackerUITests";
+			path = EpiLogUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -82,9 +82,9 @@
 		2A4275F92EDE683500174316 = {
 			isa = PBXGroup;
 			children = (
-				2A4276042EDE683500174316 /* Seizure Tracker */,
-				2A4276122EDE683700174316 /* Seizure TrackerTests */,
-				2A42761C2EDE683700174316 /* Seizure TrackerUITests */,
+				2A4276042EDE683500174316 /* EpiLog */,
+				2A4276122EDE683700174316 /* EpiLogTests */,
+				2A42761C2EDE683700174316 /* EpiLogUITests */,
 				2A4276032EDE683500174316 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -115,7 +115,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				2A4276042EDE683500174316 /* Seizure Tracker */,
+				2A4276042EDE683500174316 /* EpiLog */,
 			);
 			name = EpiLog;
 			packageProductDependencies = (
@@ -140,7 +140,7 @@
 				2A4276112EDE683700174316 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				2A4276122EDE683700174316 /* Seizure TrackerTests */,
+				2A4276122EDE683700174316 /* EpiLogTests */,
 			);
 			name = EpiLogTests;
 			packageProductDependencies = (
@@ -163,7 +163,7 @@
 				2A42761B2EDE683700174316 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				2A42761C2EDE683700174316 /* Seizure TrackerUITests */,
+				2A42761C2EDE683700174316 /* EpiLogUITests */,
 			);
 			name = EpiLogUITests;
 			packageProductDependencies = (
@@ -422,7 +422,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "-1.Seizure-Tracker";
+				PRODUCT_BUNDLE_IDENTIFIER = com.kolajova.EpiLog;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -450,7 +450,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "-1.Seizure-Tracker";
+				PRODUCT_BUNDLE_IDENTIFIER = com.kolajova.EpiLog;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -468,7 +468,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "-1.Seizure-TrackerTests";
+				PRODUCT_BUNDLE_IDENTIFIER = com.kolajova.EpiLogTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -487,7 +487,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "-1.Seizure-TrackerTests";
+				PRODUCT_BUNDLE_IDENTIFIER = com.kolajova.EpiLogTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -504,7 +504,7 @@
 				DEVELOPMENT_TEAM = J42JFKHY6Z;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "-1.Seizure-TrackerUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = com.kolajova.EpiLogUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -521,7 +521,7 @@
 				DEVELOPMENT_TEAM = J42JFKHY6Z;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "-1.Seizure-TrackerUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = com.kolajova.EpiLogUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
