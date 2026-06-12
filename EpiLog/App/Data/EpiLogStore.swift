@@ -10,6 +10,7 @@
 
 import Foundation
 import Combine
+import Security
 
 
 @MainActor
@@ -126,18 +127,21 @@ final class EpiLogStore: ObservableObject {
         guard !isLoading else { return }
         do {
             let data = try JSONEncoder().encode(patient)
-            UserDefaults.standard.set(data, forKey: patientKey)
+            let success = KeychainManager.shared.save(data: data, forKey: patientKey)
+            if !success {
+                print("Failed to save patient to Keychain")
+            }
         } catch {
-            print("Failed to save patient:", error)
+            print("Failed to encode patient:", error)
         }
     }
 
     private func loadPatient() {
-        guard let data = UserDefaults.standard.data(forKey: patientKey) else { return }
+        guard let data = KeychainManager.shared.load(forKey: patientKey) else { return }
         do {
             patient = try JSONDecoder().decode(PatientProfile.self, from: data)
         } catch {
-            print("Failed to load patient:", error)
+            print("Failed to decode patient:", error)
         }
     }
 
@@ -145,19 +149,31 @@ final class EpiLogStore: ObservableObject {
         guard !isLoading else { return }
         do {
             let data = try JSONEncoder().encode(seizures)
-            UserDefaults.standard.set(data, forKey: seizuresKey)
+            let success = KeychainManager.shared.save(data: data, forKey: seizuresKey)
+            if !success {
+                print("Failed to save seizures to Keychain")
+            }
         } catch {
-            print("Failed to save seizures:", error)
+            print("Failed to encode seizures:", error)
         }
     }
 
     private func loadSeizures() {
-        guard let data = UserDefaults.standard.data(forKey: seizuresKey) else { return }
+        guard let data = KeychainManager.shared.load(forKey: seizuresKey) else { return }
         do {
             seizures = try JSONDecoder().decode([SeizureEvent].self, from: data)
         } catch {
-            print("Failed to load seizures:", error)
+            print("Failed to decode seizures:", error)
         }
+    }
+    
+    // MARK: - GDPR: Delete all user data
+    /// Securely deletes all patient data from Keychain (GDPR compliance).
+    @MainActor
+    func deleteAllUserData() {
+        KeychainManager.shared.deleteAll()
+        patient = .init()
+        seizures = []
     }
 }
 
