@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		2A42763D2EE2891A00174316 /* FuturedArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = 2A42763C2EE2891A00174316 /* FuturedArchitecture */; };
 		2A42763F2EE2891A00174316 /* FuturedHelpers in Frameworks */ = {isa = PBXBuildFile; productRef = 2A42763E2EE2891A00174316 /* FuturedHelpers */; };
+		2AD3697A2FDACEE000F556D6 /* TalsecRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 2AD369792FDACEE000F556D6 /* TalsecRuntime */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +60,7 @@
 			files = (
 				2A42763F2EE2891A00174316 /* FuturedHelpers in Frameworks */,
 				2A42763D2EE2891A00174316 /* FuturedArchitecture in Frameworks */,
+				2AD3697A2FDACEE000F556D6 /* TalsecRuntime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,6 +87,7 @@
 				2A4276042EDE683500174316 /* EpiLog */,
 				2A4276122EDE683700174316 /* EpiLogTests */,
 				2A42761C2EDE683700174316 /* EpiLogUITests */,
+				2AD369782FDACEE000F556D6 /* Frameworks */,
 				2A4276032EDE683500174316 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -97,6 +100,13 @@
 				2A4276192EDE683700174316 /* EpiLogUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		2AD369782FDACEE000F556D6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -121,6 +131,7 @@
 			packageProductDependencies = (
 				2A42763C2EE2891A00174316 /* FuturedArchitecture */,
 				2A42763E2EE2891A00174316 /* FuturedHelpers */,
+				2AD369792FDACEE000F556D6 /* TalsecRuntime */,
 			);
 			productName = "Seizure Tracker";
 			productReference = 2A4276022EDE683500174316 /* EpiLog.app */;
@@ -206,6 +217,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				2A42763B2EE2891A00174316 /* XCRemoteSwiftPackageReference "FuturedKit" */,
+				2AD369772FDACC3F00F556D6 /* XCRemoteSwiftPackageReference "Free-RASP-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2A4276032EDE683500174316 /* Products */;
@@ -580,6 +592,14 @@
 				minimumVersion = 1.4.0;
 			};
 		};
+		2AD369772FDACC3F00F556D6 /* XCRemoteSwiftPackageReference "Free-RASP-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/talsec/Free-RASP-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.6.3;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -592,6 +612,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2A42763B2EE2891A00174316 /* XCRemoteSwiftPackageReference "FuturedKit" */;
 			productName = FuturedHelpers;
+		};
+		2AD369792FDACEE000F556D6 /* TalsecRuntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2AD369772FDACC3F00F556D6 /* XCRemoteSwiftPackageReference "Free-RASP-iOS" */;
+			productName = TalsecRuntime;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
